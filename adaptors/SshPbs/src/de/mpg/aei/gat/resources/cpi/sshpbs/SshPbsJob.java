@@ -104,7 +104,7 @@ public class SshPbsJob extends JobCpi {
 	if (logger.isDebugEnabled()) {
 	    logger.debug("reconstructing SshPbsJob: " + sj);
 	}
-
+	
 	try {
 	    this.brokerURI = new URI(sj.getBrokerURI());
 	} catch (URISyntaxException e) {
@@ -384,6 +384,8 @@ public class SshPbsJob extends JobCpi {
     protected void setSoft(SoftwareDescription Soft) {
 	this.Soft = Soft;
     }
+    
+    ArrayList<String> command = null;
 
     protected synchronized void setState() throws GATInvocationException, InterruptedException {
 	
@@ -395,23 +397,23 @@ public class SshPbsJob extends JobCpi {
 	logger.debug("Getting task status in setState()");
 
 	//  getting the status via ssh ... qstat
+	
+	if (command == null) {
+	    command = new ArrayList<String>();
 
-	String username = securityInfo.get("username");
-	String host = brokerURI.getHost();
+	    String username = securityInfo.get("username");
+	    String host = brokerURI.getHost();
 
-	if (host == null) {
-	    host = "localhost";
+	    if (host == null) {
+		host = "localhost";
+	    }
+
+	    command.add("/usr/bin/ssh");
+	    SshPbsResourceBrokerAdaptor.addCommandFlags(command, gatContext, brokerURI);
+	    command.add(username + "@" + host);
+
+	    command.add("qstat");
 	}
-	ArrayList<String> command = new ArrayList<String>();
-
-	command.add("/usr/bin/ssh");
-	command.add("-o");
-	command.add("BatchMode=yes");
-	// command.add("-t");
-	// command.add("-t");
-	command.add(username + "@" + host);
-
-	command.add("qstat");
 
 	JobState s;
 	try {
@@ -429,17 +431,17 @@ public class SshPbsJob extends JobCpi {
 	}
     }
 
-    /**
-     * mapPbsStateToGAT maps a job status of PBS to a GAT job status.
-     * 
-     * @param String
-     *            pbsState
-     * @return JobState (GAT)
-     * @author A. Beck-Ratzka, AEI, 14.09.2010
-     */
 
     private boolean sawJob = false;
     private int missedJob = 0;
+    
+    /**
+     * mapPbsStateToGAT maps a job status of PBS to a GAT job status.
+     * 
+     * @param pbsState the output of qstat.
+     * @return JobState (GAT)
+     * @author A. Beck-Ratzka, AEI, 14.09.2010
+     */
     
     private JobState mapPbsStatetoGAT(String[] pbsState) {
 
@@ -598,12 +600,8 @@ public class SshPbsJob extends JobCpi {
 	ArrayList<String> command = new ArrayList<String>();
 
 	command.add("/usr/bin/ssh");
-	command.add("-o");
-	command.add("BatchMode=yes");
-	// command.add("-t");
-	// command.add("-t");
+	SshPbsResourceBrokerAdaptor.addCommandFlags(command, gatContext, brokerURI);
 	command.add(username + "@" + host);
-
 	command.add("qdel");
 	command.add(jobID);
 

@@ -62,10 +62,11 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	return capabilities;
     }
 
-    private static final String SSH_PORT_STRING = "sshpbs.ssh.port";
-    private static final String SSHPBS_NATIVE_FLAGS = "sshpbs.native.flags";
+    static final String SSH_PORT_STRING = "sshpbs.ssh.port";
+    static final String SSHPBS_NATIVE_FLAGS = "sshpbs.native.flags";
+    static final String SSH_STRICT_HOST_KEY_CHECKING = "sshpbs.StrictHostKeyChecking";
 
-    public static final int SSH_PORT = 22;
+    static final int SSH_PORT = 22;
 
     public static String[] getSupportedSchemes() {
 	return new String[] { "sshpbs", "sshsge", ""};
@@ -75,10 +76,9 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
         Preferences p = ResourceBrokerCpi.getSupportedPreferences();
         p.put(SSH_PORT_STRING, "" + SSH_PORT);        
         p.put(SSHPBS_NATIVE_FLAGS, "");
+        p.put(SSH_STRICT_HOST_KEY_CHECKING, "false");
         return p;
     }
-    
-    private final int ssh_port;
 
     private Map<String, String> securityInfo;
 
@@ -92,9 +92,6 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		    + brokerURI);
 	}
 
-	// allow ssh port override.
-	ssh_port = getPort(gatContext, brokerURI);
-	
 	securityInfo = getSecurityInfo(gatContext, brokerURI);
     }
 
@@ -483,10 +480,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    sandbox.prestage();
 
 	    scpCommand.add("/usr/bin/scp");
-	    if (ssh_port != SSH_PORT) {
-		scpCommand.add("-p");
-		scpCommand.add("" + ssh_port);
-	    }
+	    addCommandFlags(scpCommand, gatContext, brokerURI);
 	    scpCommand.add(qsubFileName);
 	    if (sandbox.getSandboxPath() != null) {
 		scpCommand.add(username + "@" + host + ":"
@@ -502,12 +496,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	     */
 
 	    command.add("/usr/bin/ssh");
-	    if (ssh_port != SSH_PORT) {
-		command.add("-p");
-		command.add("" + ssh_port);
-	    }
-	    command.add("-o");
-	    command.add("BatchMode=yes");
+	    addCommandFlags(command, gatContext, brokerURI);
 	    // command.add("-t");
 	    // command.add("-t");
 	    command.add(username + "@" + host);
@@ -542,6 +531,20 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	}
     }
     
+    static void addCommandFlags(ArrayList<String> command, GATContext gatContext, URI brokerURI) {
+	int ssh_port = getPort(gatContext, brokerURI);
+	boolean strictHostKeyChecking = ((String) gatContext.getPreferences().get(SSH_STRICT_HOST_KEY_CHECKING, "false"))
+                .equalsIgnoreCase("true");
+	if (ssh_port != SSH_PORT) {
+	    command.add("-p");
+	    command.add("" + ssh_port);
+	}
+	command.add("-o");
+	command.add("BatchMode=yes");
+	command.add("-o");
+        command.add("StrictHostKeyChecking=" + (strictHostKeyChecking ? "yes" : "no"));
+    }
+     
     // Protect against special characters for (most) unix shells.
     private static String protectAgainstShellMetas(String s) {
         char[] chars = s.toCharArray();
