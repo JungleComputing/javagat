@@ -26,6 +26,8 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.CommandRunner;
+import org.gridlab.gat.engine.util.SshHelper;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -41,7 +43,6 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import de.mpg.aei.gat.resources.cpi.sshpbs.SshPbsSecurityUtils;
 
 /**
  * 
@@ -80,7 +81,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
         return p;
     }
 
-    private Map<String, String> securityInfo;
+    private final SshHelper sshHelper;
 
     public SshPbsResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
 	    throws GATObjectCreationException, AdaptorNotApplicableException {
@@ -92,55 +93,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		    + brokerURI);
 	}
 
-	securityInfo = getSecurityInfo(gatContext, brokerURI);
-    }
-
-    static int getPort(GATContext gatContext, URI brokerURI) {
-	int portno;
-	if (brokerURI.getPort() != -1) {
-	    portno = brokerURI.getPort();
-	} else {
-	    String port = (String) gatContext.getPreferences().get(
-		    SSH_PORT_STRING);
-	    if (port != null) {
-		portno = Integer.parseInt(port);
-	    } else {
-		portno = SSH_PORT;
-	    }
-	}
-	return portno;
-    }
-
-    static Map<String, String> getSecurityInfo(GATContext gatContext,
-	    URI brokerURI) throws GATObjectCreationException {
-
-	Map<String, String> securityInfo;
-
-	if (logger.isDebugEnabled()) {
-	    logger.debug("context: " + gatContext);
-	    logger.debug("broker: " + brokerURI);
-	}
-	try {
-	    securityInfo = SshPbsSecurityUtils.getSshCredential(gatContext,
-		    "sshpbs", brokerURI, getPort(gatContext, brokerURI));
-	} catch (Throwable e) {
-	    logger.info("SshPbsResourceBrokerAdaptor: failed to retrieve credentials"
-		    + e);
-	    securityInfo = null;
-	}
-
-	if (securityInfo == null) {
-	    throw new GATObjectCreationException(
-		    "Unable to retrieve user info for authentication");
-	}
-
-	if (securityInfo.containsKey("privatekeyfile")) {
-	    if (logger.isDebugEnabled()) {
-		logger.debug("key file argument not supported yet");
-	    }
-	}
-
-	return securityInfo;
+	sshHelper = new SshHelper(gatContext, brokerURI, "sshpbs", SSH_PORT_STRING, null);
     }
 
     public URI getBrokerURI() {
@@ -173,15 +126,6 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	if (authority == null) {
 	    authority = "localhost";
 	}
-		
-	String host = getHostname();
-	if (host == null) {
-	    host = "localhost";
-	}
-
-	if (logger.isDebugEnabled()) {
-	    logger.debug("SshPbs adaptor will use '" + host + "' as execution host");
-	}
 	
 	// Create filename for return value.
 	String returnValueFile = ".rc." + Math.random();
@@ -195,7 +139,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		true, true, true, true);
 
 	SshPbsJob sshPbsJob = new SshPbsJob(gatContext, this, description, sandbox,
-		securityInfo, returnValueFile);
+		sshHelper, returnValueFile);
 	
         Job job = null;
         if (description instanceof WrapperJobDescription) {
@@ -426,12 +370,12 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    // sd.getExecutable().toString());
 	    // No, that assumes that the executable is in
 	    // the sandbox. We don't know that. --Ceriel
-	    cmd.append(protectAgainstShellMetas(sd.getExecutable().toString()));
+	    cmd.append(SshHelper.protectAgainstShellMetas(sd.getExecutable().toString()));
 	    if (sd.getArguments() != null) {
 		String[] args = sd.getArguments();
 		for (int i = 0; i < args.length; ++i) {
 		    cmd.append(" ");
-		    cmd.append(protectAgainstShellMetas(args[i]));
+		    cmd.append(SshHelper.protectAgainstShellMetas(args[i]));
 		}
 	    }
 	    job.println(cmd.toString());
@@ -460,17 +404,12 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
     private String sshPbsSubmission(SshPbsJob PbsJob, JobDescription description,
 	    String qsubFileName, Sandbox sandbox) throws GATInvocationException {
 
-	String username = securityInfo.get("username");
-	// String password = securityInfo.get("password");
-
 	String host = getHostname();
 	if (host == null) {
 	    host = "localhost";
 	}
 
-	ArrayList<String> command = new ArrayList<String>();
-	ArrayList<String> scpCommand = new ArrayList<String>();
-
+	ArrayList<String> scpCommand;
 	
 	try {
 	    File qsubFile = GAT.createFile(gatContext, qsubFileName);
@@ -478,38 +417,34 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	    // prestaging by sandbox, the qsubFile will be prestaged separately by scp.
 	    sandbox.prestage();
+	    
+	    scpCommand = sshHelper.getScpCommand();
+	    String userName = sshHelper.getUserName();
 
-	    scpCommand.add("/usr/bin/scp");
-	    addCommandFlags(scpCommand, gatContext, brokerURI);
 	    scpCommand.add(qsubFileName);
+	    userName = userName != null ? (userName + "@") : "";
 	    if (sandbox.getSandboxPath() != null) {
-		scpCommand.add(username + "@" + host + ":"
+		scpCommand.add(userName + host + ":"
 			+ sandbox.getSandboxPath().toString());
 	    } else {
-		scpCommand.add(username + "@" + host + ":");
+		scpCommand.add(userName + host + ":");
 	    }
-
-	    SshPbsJob.singleResult(scpCommand);
+	    CommandRunner runner = new CommandRunner(scpCommand);
+	    SshPbsJob.singleResult(runner);
 
 	    /**
 	     * and create the ssh command for qsub...
 	     */
 
-	    command.add("/usr/bin/ssh");
-	    addCommandFlags(command, gatContext, brokerURI);
-	    // command.add("-t");
-	    // command.add("-t");
-	    command.add(username + "@" + host);
+	    ArrayList<String> command = sshHelper.getSshCommand(false);
 	    if (sandbox.getSandboxPath() != null) {
 		command.add("cd");
-		command.add(sandbox.getSandboxPath());
+		command.add(SshHelper.protectAgainstShellMetas(sandbox.getSandboxPath()));
 		command.add("&&");
 	    }
-	    command.add("qsub");
+	    runner = sshHelper.runSshCommand(command, "qsub", qsubFile.getName());
 
-	    command.add(qsubFile.getName());
-
-	    String[] PbsJobID = SshPbsJob.singleResult(command);
+	    String[] PbsJobID = SshPbsJob.singleResult(runner);
 	    String result = PbsJobID[0];
 	    // Check for SGE qsub result ...
 	    if (result.startsWith("Your job ")) {
@@ -529,36 +464,5 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	} catch (IOException e) {
 	    throw new GATInvocationException("Got IOException", e);
 	}
-    }
-    
-    static void addCommandFlags(ArrayList<String> command, GATContext gatContext, URI brokerURI) {
-	int ssh_port = getPort(gatContext, brokerURI);
-	boolean strictHostKeyChecking = ((String) gatContext.getPreferences().get(SSH_STRICT_HOST_KEY_CHECKING, "false"))
-                .equalsIgnoreCase("true");
-	if (ssh_port != SSH_PORT) {
-	    command.add("-p");
-	    command.add("" + ssh_port);
-	}
-	command.add("-o");
-	command.add("BatchMode=yes");
-	command.add("-o");
-        command.add("StrictHostKeyChecking=" + (strictHostKeyChecking ? "yes" : "no"));
-    }
-     
-    // Protect against special characters for (most) unix shells.
-    private static String protectAgainstShellMetas(String s) {
-        char[] chars = s.toCharArray();
-        StringBuffer b = new StringBuffer();
-        b.append('\'');
-        for (char c : chars) {
-            if (c == '\'') {
-                b.append('\'');
-                b.append('\\');
-                b.append('\'');
-            }
-            b.append(c);
-        }
-        b.append('\'');
-        return b.toString();
     }
 }

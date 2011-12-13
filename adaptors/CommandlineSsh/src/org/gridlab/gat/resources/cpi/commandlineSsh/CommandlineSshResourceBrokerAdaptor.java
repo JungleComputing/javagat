@@ -1,12 +1,8 @@
 package org.gridlab.gat.resources.cpi.commandlineSsh;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -14,7 +10,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-// import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.SshHelper;
 import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -26,7 +22,8 @@ import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.WrapperJobCpi;
-import org.gridlab.gat.security.commandlinessh.CommandlineSshSecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
@@ -63,13 +60,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
     protected static Logger logger = LoggerFactory
             .getLogger(CommandlineSshResourceBrokerAdaptor.class);
     
-    private final int ssh_port;
-
-    private boolean windows = false;
-    
-    private final boolean strictHostKeyChecking;
-    
-    private Map<String, String> securityInfo;
+    private final SshHelper brokerHelper;
 
     public static void init() {
         // GATEngine.registerUnmarshaller(CommandlineSshJob.class);
@@ -85,61 +76,8 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
     public CommandlineSshResourceBrokerAdaptor(GATContext gatContext,
             URI brokerURI) throws GATObjectCreationException {
         super(gatContext, brokerURI);
-
-        String osname = System.getProperty("os.name");
-        if (osname.startsWith("Windows")) {
-            windows = true;
-        }
         
-        /* allow port override */
-        if (brokerURI.getPort() != -1) {
-            ssh_port = brokerURI.getPort();
-        } else {
-            String port = (String) gatContext.getPreferences().get(SSH_PORT_STRING);
-            if (port != null) {
-                ssh_port = Integer.parseInt(port);
-            } else {
-                ssh_port = SSH_PORT;
-            }
-        }
-        
-        strictHostKeyChecking = ((String) gatContext.getPreferences().get(SSH_STRICT_HOST_KEY_CHECKING, "false"))
-                .equalsIgnoreCase("true");
-               
-        try {
-            securityInfo = CommandlineSshSecurityUtils.getSshCredential(
-                    gatContext, "commandlinessh", brokerURI, ssh_port);
-        } catch (Throwable e) {
-            logger
-                    .info("CommandlineSshFileAdaptor: failed to retrieve credentials"
-                            + e);
-            securityInfo = null;
-        }
-
-        if (securityInfo == null) {
-            throw new GATObjectCreationException(
-                    "Unable to retrieve user info for authentication");
-        }
-
-        if (securityInfo.containsKey("privatekeyfile")) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("key file argument not supported yet");
-            }
-        }
-    }
-    
-    private String getUserName() {
-	String user = brokerURI.getUserInfo();
-        if (user != null) {
-            return user;
-        }
-        if (! securityInfo.containsKey("default")) {
-            user = securityInfo.get("username");
-            if (user != null) {
-        	return user;
-            }
-        }
-	return null;
+        brokerHelper = new SshHelper(gatContext, brokerURI, "commandlinessh", SSH_PORT_STRING, SSH_STRICT_HOST_KEY_CHECKING);
     }
 
     public Job submitJob(AbstractJobDescription abstractDescription,
@@ -179,6 +117,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 //        System.out.println("env:" + env.toString());
         String path = getExecutable(description);
+        
         String authority = getAuthority();
         if (authority == null) {
             authority = "localhost";
@@ -214,112 +153,34 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         commandlineSshJob.setState(Job.JobState.PRE_STAGING);
         // and let the sandbox prestage the files!
         sandbox.prestage();
-
-        String username = getUserName();
-        String password = securityInfo.get("password");
-        int privateKeySlot = -1;
-        try {
-            String v = securityInfo.get("privatekeyslot");
-            if (v != null) {
-                privateKeySlot = Integer.parseInt(v);
-            }
-        } catch (NumberFormatException e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("unable to parse private key slot: " + e);
-            }
+        
+        boolean stoppable = "true".equalsIgnoreCase((String) gatContext
+                .getPreferences().get(SSH_STOPPABLE));
+        
+        ArrayList<String> command;
+        
+        if (!sd.streamingStdinEnabled() && sd.getStdin() == null) {
+            // Redirect stdin from the job to /dev/null.
+            command = brokerHelper.getSshCommand(stoppable, "-n");
+        } else {
+            command = brokerHelper.getSshCommand(stoppable);
         }
         
-        ArrayList<String> command = new ArrayList<String>();
-
-        if (windows) {
-            command.add("sexec");
-            if (username != null) {
-        	command.add(username + "@" + authority);
-            } else {
-        	command.add(authority);
-            }
-            command.add("-unat=yes");
-            if (ssh_port != SSH_PORT) {
-                command.add("-P");
-                command.add("" + ssh_port);
-            }
-            if (password == null) { // public/private key
-                int slot = privateKeySlot;
-                if (slot == -1) { // not set by the user, assume he only has
-                    // one key
-                    slot = 0;
-                }
-                command.add(" -pk=" + slot);
-            } else { // password
-                command.add(" -pw=" + password);
-            }
-            // Protection is against expansion on the remote host,
-            // which (for now) is assumed to be a unix machine.
+        String[] args = getArgumentsArray(description);
+        
+        if (brokerHelper.onWindows()) {
             // TODO: add detection and support for windows ssh servers.
-            command.add("-cmd=" + protectAgainstShellMetas(path));
-            String[] args = getArgumentsArray(description);
-            if (args != null) {
-                for (String arg : args) {
-                    command.add(protectAgainstShellMetas(arg));
-                }
-            }
+            command.add("-cmd=" + SshHelper.protectAgainstShellMetas(path));
         } else {
-            // we must use the -t option to ssh (allocates pseudo TTY).
-            // If we don't, there is no way to kill the remote process.
-            command.add("/usr/bin/ssh");
-            if (ssh_port != SSH_PORT) {
-                command.add("-p");
-                command.add("" + ssh_port);
-            }
-            command.add("-o");
-            command.add("BatchMode=yes");
-            command.add("-o");
-            command.add("StrictHostKeyChecking=" + (strictHostKeyChecking ? "yes" : "no"));
-            boolean stoppable = "true".equalsIgnoreCase((String) gatContext
-                    .getPreferences().get(SSH_STOPPABLE));
-            if (stoppable) {
-        	// Forcing pseudo tty requires more than one -t option ... --Ceriel
-        	// TODO: this kills stderr! stderr output is now sent to stdout!
-        	command.add("-t");
-        	command.add("-t");
-            }
-            if (!sd.streamingStdinEnabled() && sd.getStdin() == null) {
-                // Redirect stdin from the job to /dev/null.
-                command.add("-n");
-            }
-            if (username != null) {
-        	command.add(username + "@" + host);
-            } else {
-        	command.add(host);
-            }
             if (sandbox.getSandboxPath() != null) {
                 command.add("cd");
-                command.add(sandbox.getSandboxPath());
+                command.add(SshHelper.protectAgainstShellMetas(sandbox.getSandboxPath()));
                 command.add("&&");
             }
-            command.add(protectAgainstShellMetas(path));
-            String[] args = getArgumentsArray(description);
-            if (args != null) {
-                for (String arg : args) {
-                    command.add(protectAgainstShellMetas(arg));
-                }
-            }
+            command.add(SshHelper.protectAgainstShellMetas(path));
         }
-        
-        ProcessBuilder builder = new ProcessBuilder(command);
+        Process p = brokerHelper.startSshCommand(command, args);
 
-        if (logger.isInfoEnabled()) {
-            logger.info("running command: " + command);
-        }
-
-        
-        Process p = null;
-        try {
-            p = builder.start();
-        } catch (IOException e) {
-            throw new CommandNotFoundException(
-                    "CommandlineSshResourceBrokerAdaptor", e);
-        }
         commandlineSshJob.setState(Job.JobState.RUNNING);
         commandlineSshJob.setSubmissionTime();
         commandlineSshJob.setStartTime();
@@ -375,36 +236,4 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         return job;
     }
-    
-    // Protect against special characters for (most) unix shells.
-    private static String protectAgainstShellMetas(String s) {
-        char[] chars = s.toCharArray();
-        StringBuffer b = new StringBuffer();
-        b.append('\'');
-        for (char c : chars) {
-            if (c == '\'') {
-                b.append('\'');
-                b.append('\\');
-                b.append('\'');
-            }
-            b.append(c);
-        }
-        b.append('\'');
-        return b.toString();
-    }
-    
-    /* Not now. We'll need this when we start supporting windows ssh servers.
-    // Protect against special characters for the windows command line interpreter.
-    private static String protectAgainstWindowsMetas(String s) {
-        char[] chars = s.toCharArray();
-        StringBuffer b = new StringBuffer();
-        for (char c : chars) {
-            if ("\"&()^;| ".indexOf(c) >= 0) {
-                b.append('^');
-            }
-            b.append(c);
-        }
-        return b.toString();
-    }
-    */
 }

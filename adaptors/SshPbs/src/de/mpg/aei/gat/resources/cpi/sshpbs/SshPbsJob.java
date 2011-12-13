@@ -28,6 +28,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.CommandRunner;
+import org.gridlab.gat.engine.util.SshHelper;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -57,10 +58,10 @@ public class SshPbsJob extends JobCpi {
     Integer exitStatus = null;
 
     private URI brokerURI;
-    
-    private Map<String, String> securityInfo;
-    
+
     private final String returnValueFile;
+    
+    private final SshHelper jobHelper;
 
     /**
      * constructor of SshPbsJob
@@ -72,9 +73,9 @@ public class SshPbsJob extends JobCpi {
      */
     protected SshPbsJob(GATContext gatContext,
 	    SshPbsResourceBrokerAdaptor broker, JobDescription jobDescription,
-	    Sandbox sandbox, Map<String, String> securityInfo, String returnValueFile) {
+	    Sandbox sandbox, SshHelper jobHelper, String returnValueFile) {
 	super(gatContext, jobDescription, sandbox);
-	this.securityInfo = securityInfo;
+	this.jobHelper = jobHelper;
 	this.returnValueFile = returnValueFile;
 
 	// brokerURI necessary for security context which is required for getting a
@@ -110,12 +111,13 @@ public class SshPbsJob extends JobCpi {
 	} catch (URISyntaxException e) {
 	    throw new GATObjectCreationException("Could not create brokerURI", e);
 	}
+	this.jobHelper = new SshHelper(gatContext, brokerURI, "sshpbs", SshPbsResourceBrokerAdaptor.SSH_PORT_STRING,
+		null);
 	this.returnValueFile = sj.getReturnValueFile();
 	this.jobID = sj.getJobId();
 	this.starttime = sj.getStarttime();
 	this.stoptime = sj.getStoptime();
 	this.submissiontime = sj.getSubmissiontime();
-	this.securityInfo = SshPbsResourceBrokerAdaptor.getSecurityInfo(gatContext, brokerURI);
 
 	// reconstruct enough of the software description to be able to
 	// poststage.
@@ -398,26 +400,10 @@ public class SshPbsJob extends JobCpi {
 
 	//  getting the status via ssh ... qstat
 	
-	if (command == null) {
-	    command = new ArrayList<String>();
-
-	    String username = securityInfo.get("username");
-	    String host = brokerURI.getHost();
-
-	    if (host == null) {
-		host = "localhost";
-	    }
-
-	    command.add("/usr/bin/ssh");
-	    SshPbsResourceBrokerAdaptor.addCommandFlags(command, gatContext, brokerURI);
-	    command.add(username + "@" + host);
-
-	    command.add("qstat");
-	}
-
+        CommandRunner cmd = jobHelper.runSshCommand("qstat");
 	JobState s;
 	try {
-	    String pbsState[] = singleResult(command);
+	    String pbsState[] = singleResult(cmd);
 	    s = mapPbsStatetoGAT(pbsState);
 	    if (s != JobState.STOPPED) {
 		setState(s);
@@ -589,24 +575,8 @@ public class SshPbsJob extends JobCpi {
      */
 
     private synchronized void SshPbsJobStop() {
-
-	String username = securityInfo.get("username");
-
-	String host = brokerURI.getHost();
-	if (host == null) {
-	    host = "localhost";
-	}
-
-	ArrayList<String> command = new ArrayList<String>();
-
-	command.add("/usr/bin/ssh");
-	SshPbsResourceBrokerAdaptor.addCommandFlags(command, gatContext, brokerURI);
-	command.add(username + "@" + host);
-	command.add("qdel");
-	command.add(jobID);
-
 	try {
-	    singleResult(command);
+	    jobHelper.runSshCommand("qdel", jobID);
 	} catch (Throwable e) {
 	    logger.info("Failed to stop sshPbs job: " + jobID, e);
 	    // TODO: what to do here?
@@ -722,47 +692,23 @@ public class SshPbsJob extends JobCpi {
         return m;
     }
 
-    /**
-     * The Method SingleResult submits a single SshPbs Job.
-     * 
-     * @param command
-     *            the command line.
-     * @return the output of the command.
-     * @throws IOException
-     * 
-     * @author Alexander Beck-Ratzka, AEI, July 2010
-     */
-
-    public static synchronized String[] singleResult(ArrayList<String> command)
+    
+    public static synchronized String[] singleResult(CommandRunner command)
 	    throws IOException {
-	
-	
-	if (logger.isDebugEnabled()) {
-	    logger.debug("Running command: " + Arrays.toString(command.toArray(new String[command.size()])));
-	}
-	
-	CommandRunner run;
-	
-	try {
-	    run = new CommandRunner(command);
-	} catch (GATInvocationException e1) {
-	    throw new IOException("Command not found");
-	}
 	
 	BufferedReader br = null;
 	ArrayList<String> result = new ArrayList<String>();
 	try {
 	    String line;	   
-	    if (run.getExitCode() == 0) {
-		br = new BufferedReader(new StringReader(run.getStdout()));
+	    if (command.getExitCode() == 0) {
+		br = new BufferedReader(new StringReader(command.getStdout()));
 	    } else {
-		br = new BufferedReader(new StringReader(run.getStderr()));
+		br = new BufferedReader(new StringReader(command.getStderr()));
 	    }
 	    while ((line = br.readLine()) != null) {
 		result.add(line);
 	    }
-	    if (run.getExitCode() != 0 && (!command.get(0).toString().contains("scp")
-		    || !command.get(0).toString().contains("rm"))) {
+	    if (command.getExitCode() != 0) {
 		throw new IOException("rejected: "
 			+ Arrays.toString(result.toArray(new String[0])));
 	    }
