@@ -68,15 +68,13 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
     static final String SSHPBS_NATIVE_FLAGS = "sshpbs.native.flags";
     static final String SSH_STRICT_HOST_KEY_CHECKING = "sshpbs.StrictHostKeyChecking";
 
-    static final int SSH_PORT = 22;
-
     public static String[] getSupportedSchemes() {
 	return new String[] { "sshpbs", "sshsge"};
     }
     
     public static Preferences getSupportedPreferences() {
         Preferences p = ResourceBrokerCpi.getSupportedPreferences();
-        p.put(SSH_PORT_STRING, "" + SSH_PORT);        
+        p.put(SSH_PORT_STRING, "");        
         p.put(SSHPBS_NATIVE_FLAGS, "");
         p.put(SSH_STRICT_HOST_KEY_CHECKING, "false");
         return p;
@@ -284,7 +282,8 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		job.addString(nativeFlags);
 	    }
 
-	    // Set working dir for SGE. Note: this is the default for PBS.
+	    // Set working dir for SGE. Note: for PBS this does not work, it needs
+	    // a -d option.
 	    job.addSgeOption("cwd", null);
 
 	    // Name for the job.
@@ -372,7 +371,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    job.println(cmd.toString());
 
 	    job.println("echo \"retvalue = $?\" > " + sandboxDir + "/" + returnValueFile);
-
+	    // job.println("echo \"retvalue = $?\" > " + returnValueFile);
 	} catch (Throwable e) {
 	    throw new GATInvocationException(
 		    "Cannot create temporary qsub file"
