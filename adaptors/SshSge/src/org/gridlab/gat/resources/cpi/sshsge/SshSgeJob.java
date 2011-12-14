@@ -1,11 +1,4 @@
-/**
- * SshPbsJob.java
- *
- * Created on June 10th, 2010
- *
- */
-
-package de.mpg.aei.gat.resources.cpi.sshpbs;
+package org.gridlab.gat.resources.cpi.sshsge;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -26,28 +19,15 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.SerializedSimpleJobBase;
 import org.gridlab.gat.resources.cpi.SimpleJobBase;
 
-/**
- * @author Alexander Beck-Ratzka, AEI, June 10th 2010, created
- */
+public class SshSgeJob extends SimpleJobBase {
 
-public class SshPbsJob extends SimpleJobBase {
-
-    // private static String regexString = "[ ][ ]";
     private static String regexString = "\\s\\s*";
 
     private static final long serialVersionUID = 1L;
     
     private final SshHelper jobHelper;
 
-    /**
-     * constructor of SshPbsJob
-     * 
-     * @param gatContext
-     *            The gatContext
-     * @param jobDescription
-     * @param sandbox
-     */
-    protected SshPbsJob(GATContext gatContext,
+    protected SshSgeJob(GATContext gatContext,
 	    URI brokerURI, JobDescription jobDescription,
 	    Sandbox sandbox, SshHelper jobHelper, String returnValueFile) {
 	super(gatContext, brokerURI, jobDescription, sandbox, returnValueFile);
@@ -58,12 +38,12 @@ public class SshPbsJob extends SimpleJobBase {
      * Constructor for unmarshalled jobs.
      */
 
-    public SshPbsJob(GATContext gatContext, SerializedSimpleJobBase sj)
+    public SshSgeJob(GATContext gatContext, SerializedSimpleJobBase sj)
 	    throws GATObjectCreationException {
 	super(gatContext, sj);
-	jobHelper = new SshHelper(gatContext, brokerURI, "sshpbs",
-		SshPbsResourceBrokerAdaptor.SSH_PORT_STRING,
-		SshPbsResourceBrokerAdaptor.SSH_STRICT_HOST_KEY_CHECKING);
+	jobHelper = new SshHelper(gatContext, brokerURI, "sshsge",
+		SshSgeResourceBrokerAdaptor.SSH_PORT_STRING,
+		SshSgeResourceBrokerAdaptor.SSH_STRICT_HOST_KEY_CHECKING);
 	startListener();
     }
 
@@ -74,7 +54,7 @@ public class SshPbsJob extends SimpleJobBase {
 
     public static Advertisable unmarshal(GATContext context, String s)
 	    throws GATObjectCreationException {
-	return SimpleJobBase.unmarshal(context, s, SshPbsJob.class.getClassLoader());
+	return SimpleJobBase.unmarshal(context, s, SshSgeJob.class.getClassLoader());
     }
 
     protected void setSoft(SoftwareDescription Soft) {
@@ -100,7 +80,6 @@ public class SshPbsJob extends SimpleJobBase {
 
 	//  getting the status via ssh ... qstat
 	
-	
 	List<String> command = jobHelper.getSshCommand(false);
 	command.add("qstat");
 	command.add("-u");
@@ -111,7 +90,7 @@ public class SshPbsJob extends SimpleJobBase {
         }
 	JobState s;
 	try {
-	    s = mapPbsStatetoGAT(cmd.outputAsLines());
+	    s = mapSgeStatetoGAT(cmd.outputAsLines());
 	    if (s != JobState.STOPPED) {
 		setState(s);
 	    } else {
@@ -127,29 +106,18 @@ public class SshPbsJob extends SimpleJobBase {
 
     private boolean sawJob = false;
     private int missedJob = 0;
-    
-    /**
-     * mapPbsStateToGAT maps a job status of PBS to a GAT job status.
-     * 
-     * @param pbsState the output of qstat.
-     * @return JobState (GAT)
-     * @author A. Beck-Ratzka, AEI, 14.09.2010
-     */
-    
-    private JobState mapPbsStatetoGAT(List<String> pbsState) {
+      
+    private JobState mapSgeStatetoGAT(List<String> SgeState) {
 
 	String[] splits = null;
 
-	if (pbsState == null) {
-	    logger.error("Error in mapPbsStatetoGAT: no PbsState returned");
+	if (SgeState == null) {
+	    logger.error("Error in mapSgeStatetoGAT: no SgeState returned");
 	    return JobState.UNKNOWN;
 	} else {
-	    for (String s : pbsState) {
+	    for (String s : SgeState) {
 		// Remove leading and trailing spaces, and split.
 		splits = s.trim().split(regexString);
-		// Note: PBS qstat sometimes does not print the complete job identifier.
-		// On lisa.sara.nl, for example, if the job identifier is 5823458.batch1.irc.sara.nl,
-		// qstat only prints 5823458.batch1. --Ceriel
 		if (this.jobID.startsWith(splits[0])) {
 		    if (logger.isDebugEnabled()) {
 			logger.debug("Found job: " + splits[0] + ", JobID = " + this.jobID);
@@ -184,12 +152,12 @@ public class SshPbsJob extends SimpleJobBase {
 		// Return current state.
 		return state;
 	    } else {
-		// PBS alternative output format. 10'th column gives the job state.
-		
-		if (splits.length < 10) {
+		// For SGE, format is:
+		// JobID Prio JobName JobOwner JobState .....
+		if (splits.length < 5) {
 		    return JobState.UNKNOWN;
 		}
-		String status = splits[9];
+		String status = splits[4];
 		if (status.indexOf('t') >= 0 || status.indexOf('T') >= 0) {	// transfer
 		    return JobState.SCHEDULED;
 		}
@@ -226,7 +194,7 @@ public class SshPbsJob extends SimpleJobBase {
 	try {
 	    jobHelper.runSshCommand("qdel", jobID);
 	} catch (Throwable e) {
-	    logger.info("Failed to stop sshPbs job: " + jobID, e);
+	    logger.info("Failed to stop sshSge job: " + jobID, e);
 	    // TODO: what to do here?
 	}
     }
@@ -250,7 +218,7 @@ public class SshPbsJob extends SimpleJobBase {
 	    }
 	    return new Integer(rc);
 	} catch (FileNotFoundException e) {
-	    logger.debug("SshPbs adaptor: exit value file " + returnValueFile
+	    logger.debug("SshSge adaptor: exit value file " + returnValueFile
 		    + " not found!");
 	    return null;
 	} catch (IOException e) {

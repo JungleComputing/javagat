@@ -1,11 +1,4 @@
-/*
- * SshPbsBrokerAdaptor.java
- *
- * Created on July 8, 2008
- *
- */
-
-package de.mpg.aei.gat.resources.cpi.sshpbs;
+package org.gridlab.gat.resources.cpi.sshsge;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -44,16 +37,10 @@ import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * 
- * @author Alexander Beck-Ratzka, AEI.
- * 
- */
-
-public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
+public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     protected static Logger logger = LoggerFactory
-	    .getLogger(SshPbsResourceBrokerAdaptor.class);
+	    .getLogger(SshSgeResourceBrokerAdaptor.class);
 
     public static Map<String, Boolean> getSupportedCapabilities() {
 	Map<String, Boolean> capabilities = ResourceBrokerCpi
@@ -63,18 +50,18 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	return capabilities;
     }
 
-    static final String SSH_PORT_STRING = "sshpbs.ssh.port";
-    static final String SSHPBS_NATIVE_FLAGS = "sshpbs.native.flags";
-    static final String SSH_STRICT_HOST_KEY_CHECKING = "sshpbs.StrictHostKeyChecking";
+    static final String SSH_PORT_STRING = "sshsge.ssh.port";
+    static final String SSHSGE_NATIVE_FLAGS = "sshsge.native.flags";
+    static final String SSH_STRICT_HOST_KEY_CHECKING = "sshsge.StrictHostKeyChecking";
 
     public static String[] getSupportedSchemes() {
-	return new String[] { "sshpbs"};
+	return new String[] { "sshsge"};
     }
     
     public static Preferences getSupportedPreferences() {
         Preferences p = ResourceBrokerCpi.getSupportedPreferences();
         p.put(SSH_PORT_STRING, "");        
-        p.put(SSHPBS_NATIVE_FLAGS, "");
+        p.put(SSHSGE_NATIVE_FLAGS, "");
         p.put(SSH_STRICT_HOST_KEY_CHECKING, "false");
         return p;
     }
@@ -82,14 +69,14 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
     private final SshHelper sshHelper;
 
     public static void init() {
-	GATEngine.registerUnmarshaller(SshPbsJob.class);
+	GATEngine.registerUnmarshaller(SshSgeJob.class);
     }
     
-    public SshPbsResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
+    public SshSgeResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
 	    throws GATObjectCreationException, AdaptorNotApplicableException {
 
 	super(gatContext, brokerURI);
-	sshHelper = new SshHelper(gatContext, brokerURI, "sshpbs", SSH_PORT_STRING, SSH_STRICT_HOST_KEY_CHECKING);
+	sshHelper = new SshHelper(gatContext, brokerURI, "sshsge", SSH_PORT_STRING, SSH_STRICT_HOST_KEY_CHECKING);
     }
 
     public Job submitJob(AbstractJobDescription abstractDescription,
@@ -107,7 +94,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	int nproc = description.getProcessCount();
 	
 	if (nproc != 1) {
-	    throw new GATInvocationException("SshPbs adaptor cannot start multiple processes.");
+	    throw new GATInvocationException("SshSge adaptor cannot start multiple processes.");
 	}
 
 	String authority = getAuthority();
@@ -117,47 +104,48 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	
 	// Create filename for return value.
 	String returnValueFile = ".rc." + Math.random();
+	
 	String qsubFileName = createQsubScript(description, returnValueFile);
 	
 	try {
 	    description.getSoftwareDescription().addPostStagedFile(GAT.createFile(gatContext, new URI(returnValueFile)));
 	    description.getSoftwareDescription().addPreStagedFile(GAT.createFile(gatContext, new URI(qsubFileName)));
 	} catch (Throwable e) {
-	    // O well, we tried.
+	    // TODO!
 	}
 	
 	Sandbox sandbox = new Sandbox(gatContext, description, authority, null,
 		true, true, true, true);
 
-	SshPbsJob sshPbsJob = new SshPbsJob(gatContext, brokerURI, description, sandbox,
+	SshSgeJob sshSgeJob = new SshSgeJob(gatContext, brokerURI, description, sandbox,
 		sshHelper, returnValueFile);
 	
         Job job = null;
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, sshPbsJob,
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, sshSgeJob,
                     listener, metricDefinitionName);
             listener = tmp;
             job = tmp;
         } else {
-            job = sshPbsJob;
+            job = sshSgeJob;
         }
 	if (listener != null && metricDefinitionName != null) {
-	    Metric metric = sshPbsJob.getMetricDefinitionByName(metricDefinitionName)
+	    Metric metric = sshSgeJob.getMetricDefinitionByName(metricDefinitionName)
 		    .createMetric(null);
-	    sshPbsJob.addMetricListener(listener, metric);
+	    sshSgeJob.addMetricListener(listener, metric);
 	}
 	
 	java.io.File jobFile = new java.io.File(qsubFileName);
 
-	String jobid = sshPbsSubmission(sshPbsJob, description, jobFile, sandbox);
+	String jobid = sshSgeSubmission(sshSgeJob, description, jobFile, sandbox);
 
 	if (jobid != null) {
-	    sshPbsJob.setState(Job.JobState.SCHEDULED);
-	    sshPbsJob.setSoft(description.getSoftwareDescription());
-	    sshPbsJob.setJobID(jobid);
-	    sshPbsJob.startListener();
+	    sshSgeJob.setState(Job.JobState.SCHEDULED);
+	    sshSgeJob.setSoft(description.getSoftwareDescription());
+	    sshSgeJob.setJobID(jobid);
+	    sshSgeJob.startListener();
 	} else {
-	    throw new GATInvocationException("Could not submit sshPbs job");
+	    throw new GATInvocationException("Could not submit sshSge job");
 	}
 
 	return job;
@@ -176,7 +164,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	Integer Nodes = null;
 	String HwArg = null;
 	java.io.File temp;
-	PbsScriptWriter job = null;
+	SgeScriptWriter job = null;
 	HashMap<String, Object> rd_HashMap = null;
 	
 	SoftwareDescription sd = description.getSoftwareDescription();
@@ -191,16 +179,16 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	}
 
 	try {
-	    temp = java.io.File.createTempFile("pbs", null);
+	    temp = java.io.File.createTempFile("sge", null);
 	} catch (IOException e) {
 	    throw new GATInvocationException("Cannot create temporary qsub file");
 	}
 	    
 	try {
-	    job = new PbsScriptWriter(
+	    job = new SgeScriptWriter(
 		    new BufferedWriter(new FileWriter(temp)));
 	    job.println("#!/bin/sh");
-	    job.println("# qsub script automatically generated by GAT SshPbs adaptor");
+	    job.println("# qsub script automatically generated by GAT SshSge adaptor");
 
 	    // Resources: queue, walltime, memory size, et cetera.
 	    Queue = (String) rd_HashMap.get("machine.queue");
@@ -226,27 +214,22 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		Nodes = description.getResourceCount();
 	    }
 
-	    lString = "";
+	    if (Nodes > 1) {
+		String jobType = getStringAttribute(description, SoftwareDescription.JOB_TYPE, "prun");
+		job.addOption("pe", jobType + " " + Nodes);
+	    }
+
 	    if (Time != -1L) {
-		// Reformat time.
-		int minutes = (int) (Time % 60);
-
-		lString += "walltime=" + (Time / 60) + ":" + (minutes / 10) + (minutes % 10) + ":00,";
+		job.addOption("l", "h_rt=" + (Time*60));
 	    }
-	    if (Filesize != null) {
-		lString += "file=" + Filesize + ",";
-	    }
-	    if (Memsize != null) {
-		lString += "mem=" + Memsize + ",";
-	    }
-	    lString += "nodes=" + Nodes;
 
-	    job.addOption("l", lString);
-
-	    String nativeFlags = (String) gatContext.getPreferences().get(SSHPBS_NATIVE_FLAGS);
+	    String nativeFlags = (String) gatContext.getPreferences().get(SSHSGE_NATIVE_FLAGS);
 	    if (nativeFlags != null) {
 		job.addString(nativeFlags);
 	    }
+
+	    // Set working dir for SGE.
+	    job.addOption("cwd", null);
 
 	    // Name for the job.
 	    HwArg = (String) rd_HashMap.get("Jobname");
@@ -261,13 +244,12 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		job.addOption("N", HwArg);
 
 	    // Combine stdout and stderr?
-	    // In PBS: "eo" means that both streams end up in stderr,
-	    // "oe" means that both streams end up in stdout,
-	    // "n" means separate streams.
+	    // In SGE, "y" means that both streams
+	    // end up in stdout, "n" means separate streams.
 	    HwArg = (String) rd_HashMap.get("YankEO");
 	    if (HwArg != null) {
 		if (HwArg.equals("y")) {
-		    job.addOption("j", "oe");
+		    job.addOption("j", "y");
 		} else {
 		    job.addOption("j", HwArg);
 		}
@@ -281,7 +263,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    if (sd.getStderr() != null) {
 		job.addOption("e", sd.getStderr().getName().toString());
 	    }
-
+	    
 	    // Support environment.
 	    Map<String, Object> env = sd.getEnvironment();
 	    if (env != null) {
@@ -297,10 +279,6 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    // Construct command.
 	    StringBuffer cmd = new StringBuffer();
 
-	    // cmd.append("$HOME/" + sandbox.getSandboxPath() + "/" +
-	    // sd.getExecutable().toString());
-	    // No, that assumes that the executable is in
-	    // the sandbox. We don't know that. --Ceriel
 	    cmd.append(SshHelper.protectAgainstShellMetas(sd.getExecutable().toString()));
 	    if (sd.getArguments() != null) {
 		String[] args = sd.getArguments();
@@ -312,7 +290,6 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    job.println(cmd.toString());
 
 	    job.println("echo \"retvalue = $?\" > " + returnValueFile);
-	    // job.println("echo \"retvalue = $?\" > " + returnValueFile);
 	} catch (Throwable e) {
 	    throw new GATInvocationException(
 		    "Cannot create temporary qsub file"
@@ -324,13 +301,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	return (temp.getAbsolutePath().toString());
     }
 
-    /**
-     * Submits a PBS job via ssh on a PBS host, and transfers the qsub file to
-     * the PBS host.
-     * @return the job ID of the PBS job on the remote host
-     */
-
-    private String sshPbsSubmission(SshPbsJob PbsJob, JobDescription description,
+    private String sshSgeSubmission(SshSgeJob SgeJob, JobDescription description,
 	    java.io.File qsubFile, Sandbox sandbox) throws GATInvocationException {
 
 	String host = getHostname();
@@ -338,32 +309,28 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    host = "localhost";
 	}
 
-	try {
-	    CommandRunner runner;
-	    
+	try {	    
 	    sandbox.prestage();
-
+	    // Create the ssh command for qsub...
 	    ArrayList<String> command = sshHelper.getSshCommand(false);
 	    if (sandbox.getSandboxPath() != null) {
 		command.add("cd");
 		command.add(SshHelper.protectAgainstShellMetas(sandbox.getSandboxPath()));
 		command.add("&&");
-		command.add("qsub");
-		command.add("-d");
-		command.add("`pwd`");	// Not to be protected, so added separately.
-		runner = sshHelper.runSshCommand(command, qsubFile.getName());
-	    } else {
-		runner = sshHelper.runSshCommand(command, "qsub", qsubFile.getName());
 	    }
-	    List<String> PbsJobID = runner.outputAsLines();
+	    CommandRunner runner = sshHelper.runSshCommand(command, "qsub", qsubFile.getName());
+	    List<String> sgeJobID = runner.outputAsLines();
 	    if (runner.getExitCode() != 0) {
 		throw new GATInvocationException("qsub gave exit status " + runner.getExitCode());
 	    }
 
-	    String result = PbsJobID.get(0);
+	    String result = sgeJobID.get(0);
+	    // Check for SGE qsub result ...
+	    if (result.startsWith("Your job ")) {
+		result = result.split(" ")[2];
+	    }
 
 	    return result;
-
 	} catch (IOException e) {
 	    throw new GATInvocationException("Got IOException", e);
 	} finally {

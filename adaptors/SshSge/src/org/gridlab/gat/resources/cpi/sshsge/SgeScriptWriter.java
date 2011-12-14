@@ -1,29 +1,23 @@
-package de.mpg.aei.gat.resources.cpi.sshpbs;
+package org.gridlab.gat.resources.cpi.sshsge;
 
 import java.io.PrintWriter;
 import java.io.Writer;
 
-/**
- * Some utilities for filling in the pbs script file.
- *
- * @author: Alexander Beck-Ratzka, AEI, July 2010
- */
-
-public class PbsScriptWriter extends PrintWriter {
+public class SgeScriptWriter extends PrintWriter {
     
-    private static final String pbsSuffix = "#PBS";
+    private static final String sgeSuffix = "#$";
 
-    public PbsScriptWriter (Writer out) {
+    public SgeScriptWriter (Writer out) {
     	super(out);
     }
     
     /**
-     * Adds an option line.
+     * Adds an option line for PBS as well as SGE.
      * @param opt the option itself.
      * @param param an optional additional parameter.
      */
     public void addOption(String opt, Object param) {
-        print(pbsSuffix);
+        print(sgeSuffix);
         print(" -");
         print(opt);
         if (param != null) {
@@ -34,9 +28,13 @@ public class PbsScriptWriter extends PrintWriter {
             println();
         }
     }
-    
+
+    /**
+     * Adds an option line for SGE as well as PBS.
+     * @param s the full option string.
+     */
     public void addString(String s) {
-	print(pbsSuffix);
+	print(sgeSuffix);
 	print (" ");
 	println(s);
     }
