@@ -13,11 +13,10 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.gridlab.gat.GAT;
@@ -72,7 +71,7 @@ public class SshPbsJob extends JobCpi {
      * @param sandbox
      */
     protected SshPbsJob(GATContext gatContext,
-	    SshPbsResourceBrokerAdaptor broker, JobDescription jobDescription,
+	    URI brokerURI, JobDescription jobDescription,
 	    Sandbox sandbox, SshHelper jobHelper, String returnValueFile) {
 	super(gatContext, jobDescription, sandbox);
 	this.jobHelper = jobHelper;
@@ -81,7 +80,7 @@ public class SshPbsJob extends JobCpi {
 	// brokerURI necessary for security context which is required for getting a
 	// ssh connection for off-line monitoring.
 
-	brokerURI = broker.getBrokerURI();
+	this.brokerURI = brokerURI;
 	state = JobState.INITIAL;
 
 	HashMap<String, Object> returnDef = new HashMap<String, Object>();
@@ -200,8 +199,6 @@ public class SshPbsJob extends JobCpi {
 		    } catch (GATInvocationException e) {
 			logger.debug("GATInvocationException caught in thread jobListener");
 			setState(JobState.SUBMISSION_ERROR);
-		    } catch(InterruptedException e) {
-			// Try again ...
 		    }
 		    if (logger.isDebugEnabled()) {
 			logger.debug("Job Status is:  " + state.toString());
@@ -389,7 +386,7 @@ public class SshPbsJob extends JobCpi {
     
     ArrayList<String> command = null;
 
-    protected synchronized void setState() throws GATInvocationException, InterruptedException {
+    protected synchronized void setState() throws GATInvocationException {
 	
         if (state == JobState.POST_STAGING || state == JobState.STOPPED
                 || state == JobState.SUBMISSION_ERROR) {
@@ -401,10 +398,12 @@ public class SshPbsJob extends JobCpi {
 	//  getting the status via ssh ... qstat
 	
         CommandRunner cmd = jobHelper.runSshCommand("qstat");
+        if (cmd.getExitCode() != 0) {
+            throw new GATInvocationException("qstat gives exitcode " +  cmd.getExitCode());
+        }
 	JobState s;
 	try {
-	    String pbsState[] = singleResult(cmd);
-	    s = mapPbsStatetoGAT(pbsState);
+	    s = mapPbsStatetoGAT(cmd.outputAsLines());
 	    if (s != JobState.STOPPED) {
 		setState(s);
 	    } else {
@@ -429,42 +428,49 @@ public class SshPbsJob extends JobCpi {
      * @author A. Beck-Ratzka, AEI, 14.09.2010
      */
     
-    private JobState mapPbsStatetoGAT(String[] pbsState) {
+    private JobState mapPbsStatetoGAT(List<String> pbsState) {
 
-	String pbsLine = null;
 	String[] splits = null;
 
 	if (pbsState == null) {
 	    logger.error("Error in mapPbsStatetoGAT: no PbsState returned");
 	    return JobState.UNKNOWN;
 	} else {
-	    for (int ii = 0; ii < pbsState.length; ii++) {
-		pbsLine = removeBlanksToOne(pbsState[ii]);
-		splits = pbsLine.split(" ");
+	    for (String s : pbsState) {
+		// Remove leading and trailing spaces, and split.
+		splits = s.trim().split(regexString);
 		// Note: PBS qstat sometimes does not print the complete job identifier.
 		// On lisa.sara.nl, for example, if the job identifier is 5823458.batch1.irc.sara.nl,
 		// qstat only prints 5823458.batch1. --Ceriel
 		if (this.jobID.startsWith(splits[0])) {
-                    logger.debug("Found job: " + splits[0] + ", JobID = " + this.jobID);
+		    if (logger.isDebugEnabled()) {
+			logger.debug("Found job: " + splits[0] + ", JobID = " + this.jobID);
+		    }
 		    sawJob = true;
 		    break;
 		}
 		splits = null;
 	    }
 	    if (splits == null) {
-		logger.debug("no job status information for '" + this.jobID
-			+ "' found.");
+		if (logger.isDebugEnabled()) {
+		    logger.debug("no job status information for '" + this.jobID
+			    + "' found.");
+		}
 		// if we saw it before, assume it is finished now.
 		if (sawJob) {
-		    logger.debug("But is was present earlier, so we assume it finished.");
+		    if (logger.isDebugEnabled()) {
+			logger.debug("But is was present earlier, so we assume it finished.");
+		    }
 		    return JobState.STOPPED;
 		}
 		missedJob++;
-		if (missedJob >= 5) {
-		    // arbitrary threshold. Problem is, there may be a gap between successful
+		if (missedJob > 1) {
+		    // arbitrary threshold. Allow for a small gap between successful
 		    // submission of the job and its appearance in qstat output. But it may
 		    // also not appear because it is already finished ...
-		    logger.debug("But is was not present for a while, so we assume it finished.");
+		    if (logger.isDebugEnabled()) {
+			logger.debug("But is was not present for a while, so we assume it finished.");
+		    }
 		    return JobState.STOPPED;
 		}
 		// Return current state.
@@ -510,31 +516,6 @@ public class SshPbsJob extends JobCpi {
 		return JobState.UNKNOWN;
 	    }
 	}
-    }
-
-    /**
-     * Method removeBlanksToOne: exchange several blanks in a string a let only
-     * one as a delimiter between word.
-     * 
-     * @author - A. Beck-Ratzka, AEI.
-     * @param String
-     *            changeString - String with more then one blank as delimiter.
-     * @return String result - strings with only single blanks as delimiters
-     *         between words.
-     */
-
-    private static String removeBlanksToOne(String changeString) {
-
-	String result = null;
-
-	result = changeString.trim().replaceAll(regexString, " ");
-        /*
-	while (result.contains("  ")) {
-	    result = result.replaceAll(regexString, " ");
-	}
-        */
-
-	return (result);
     }
 
     public void stop() throws GATInvocationException {
@@ -690,39 +671,5 @@ public class SshPbsJob extends JobCpi {
         }
 
         return m;
-    }
-
-    
-    public static synchronized String[] singleResult(CommandRunner command)
-	    throws IOException {
-	
-	BufferedReader br = null;
-	ArrayList<String> result = new ArrayList<String>();
-	try {
-	    String line;	   
-	    if (command.getExitCode() == 0) {
-		br = new BufferedReader(new StringReader(command.getStdout()));
-	    } else {
-		br = new BufferedReader(new StringReader(command.getStderr()));
-	    }
-	    while ((line = br.readLine()) != null) {
-		result.add(line);
-	    }
-	    if (command.getExitCode() != 0) {
-		throw new IOException("rejected: "
-			+ Arrays.toString(result.toArray(new String[0])));
-	    }
-	} finally {
-	    if (br != null) {
-		br.close();
-	    }
-	}
-	String[] retval = result.toArray(new String[result.size()]);
-	if (logger.isDebugEnabled()) {
-	    for (int i = 0; i < retval.length; i++) {
-		logger.debug("Result[" + i + "] = " + retval[i]);
-	    }
-	}
-	return retval;
     }
 }

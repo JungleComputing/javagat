@@ -157,13 +157,11 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         boolean stoppable = "true".equalsIgnoreCase((String) gatContext
                 .getPreferences().get(SSH_STOPPABLE));
         
-        ArrayList<String> command;
+        ArrayList<String> command = brokerHelper.getSshCommand(stoppable);
         
         if (!sd.streamingStdinEnabled() && sd.getStdin() == null) {
             // Redirect stdin from the job to /dev/null.
-            command = brokerHelper.getSshCommand(stoppable, "-n");
-        } else {
-            command = brokerHelper.getSshCommand(stoppable);
+            command.add("-n");
         }
         
         String[] args = getArgumentsArray(description);

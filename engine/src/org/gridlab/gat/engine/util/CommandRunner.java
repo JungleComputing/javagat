@@ -1,7 +1,10 @@
 package org.gridlab.gat.engine.util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -137,5 +140,40 @@ public class CommandRunner {
             // Cannot happen
             return 1;
         }
+    }
+    
+    /**
+     * Returns either the stdout or the stderr, depending on the exit status of the job,
+     * as an array of strings, one entry for each line.
+     * 
+     * @return a list of strings, one entry for each line.
+     * @throws IOException on IO error.
+     */
+    public List<String> outputAsLines() throws IOException {
+	
+	BufferedReader br = null;
+	ArrayList<String> result = new ArrayList<String>();
+	try {
+	    String line;	   
+	    if (getExitCode() == 0) {
+		br = new BufferedReader(new StringReader(getStdout()));
+	    } else {
+		br = new BufferedReader(new StringReader(getStderr()));
+	    }
+	    while ((line = br.readLine()) != null) {
+		result.add(line);
+	    }
+	} finally {
+	    if (br != null) {
+		br.close();
+	    }
+	}
+	
+	if (logger.isDebugEnabled()) {
+	    for (String s : result) {
+		logger.debug("Line: " + s);
+	    }
+	}
+	return result;
     }
 }

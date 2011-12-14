@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.lang.StringBuffer;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
@@ -70,7 +71,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
     static final int SSH_PORT = 22;
 
     public static String[] getSupportedSchemes() {
-	return new String[] { "sshpbs", "sshsge", ""};
+	return new String[] { "sshpbs", "sshsge"};
     }
     
     public static Preferences getSupportedPreferences() {
@@ -83,25 +84,15 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private final SshHelper sshHelper;
 
+    public static void init() {
+	GATEngine.registerUnmarshaller(SshPbsJob.class);
+    }
+    
     public SshPbsResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
 	    throws GATObjectCreationException, AdaptorNotApplicableException {
 
 	super(gatContext, brokerURI);
-
-	if (brokerURI.getScheme() == null) {
-	    throw new AdaptorNotApplicableException("cannot handle this URI: "
-		    + brokerURI);
-	}
-
-	sshHelper = new SshHelper(gatContext, brokerURI, "sshpbs", SSH_PORT_STRING, null);
-    }
-
-    public URI getBrokerURI() {
-	return brokerURI;
-    }
-
-    public static void init() {
-	GATEngine.registerUnmarshaller(SshPbsJob.class);
+	sshHelper = new SshHelper(gatContext, brokerURI, "sshpbs", SSH_PORT_STRING, SSH_STRICT_HOST_KEY_CHECKING);
     }
 
     public Job submitJob(AbstractJobDescription abstractDescription,
@@ -138,7 +129,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	Sandbox sandbox = new Sandbox(gatContext, description, authority, null,
 		true, true, true, true);
 
-	SshPbsJob sshPbsJob = new SshPbsJob(gatContext, this, description, sandbox,
+	SshPbsJob sshPbsJob = new SshPbsJob(gatContext, brokerURI, description, sandbox,
 		sshHelper, returnValueFile);
 	
         Job job = null;
@@ -299,7 +290,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    // Name for the job.
 	    HwArg = (String) rd_HashMap.get("Jobname");
 	    if (HwArg == null) {
-		HwArg = getBrokerURI().getUserInfo();
+		HwArg = brokerURI.getUserInfo();
 		if (HwArg == null || "".equals(HwArg)) {
 		    HwArg = System.getProperty("user.name");
 		}
@@ -430,7 +421,9 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		scpCommand.add(userName + host + ":");
 	    }
 	    CommandRunner runner = new CommandRunner(scpCommand);
-	    SshPbsJob.singleResult(runner);
+	    if (runner.getExitCode() != 0) {
+		throw new GATInvocationException("Could not scp job; exit status " + runner.getExitCode());
+	    }
 
 	    /**
 	     * and create the ssh command for qsub...
@@ -443,9 +436,12 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		command.add("&&");
 	    }
 	    runner = sshHelper.runSshCommand(command, "qsub", qsubFile.getName());
+	    List<String> PbsJobID = runner.outputAsLines();
+	    if (runner.getExitCode() != 0) {
+		throw new GATInvocationException("qsub gave exit status " + runner.getExitCode());
+	    }
 
-	    String[] PbsJobID = SshPbsJob.singleResult(runner);
-	    String result = PbsJobID[0];
+	    String result = PbsJobID.get(0);
 	    // Check for SGE qsub result ...
 	    if (result.startsWith("Your job ")) {
 		result = result.split(" ")[2];
