@@ -1721,6 +1721,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     public boolean setLastModified(long lastModified)
             throws GATInvocationException {
+	if (! exists()) {
+	    return false;
+	}
         if (fixedURI.refersToLocalHost()) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             return f.setLastModified(lastModified);
