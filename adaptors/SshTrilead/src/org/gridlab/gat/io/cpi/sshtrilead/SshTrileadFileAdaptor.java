@@ -1730,7 +1730,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             String[] result;
             try {
-                result = execCommand("touch -t "
+                result = execCommand("touch -c -t "
                         + toTouchDateFormat(lastModified) + " "
                         + protectAgainstShellMetas(getFixedPath()));
             } catch (Exception e) {
@@ -1750,7 +1750,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             String[] result;
             try {
-                result = execCommand("perl -e 'print ((stat $ARGV[0])[9]);' "
+                result = execCommand("stat -c %Y "
                         + protectAgainstShellMetas(getFixedPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
