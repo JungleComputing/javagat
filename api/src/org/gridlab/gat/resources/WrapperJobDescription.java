@@ -373,20 +373,11 @@ public class WrapperJobDescription extends JobDescription {
             out.writeObject(wrapperCommonDest);
             String sandboxTrigger = (String) softwareDescription.getAttributes().get(WRAPPER_COMMON_TRIGGER);
             out.writeObject(sandboxTrigger);
-            synchronized (WrapperJobDescription.class) {
-                if (triggerDirectory == null) {
-                    triggerDirectory = originator;
-                }
-                File triggerDir = GAT.createFile(context, triggerDirectory);
-                if (triggerDir.exists()) {
-                    if (! triggerDir.isDirectory()) {
-                        throw new GATObjectCreationException("specified trigger directory " + triggerDirectory
-                                + " exists and is not a directory");
-                    }
-                } else if (! triggerDir.mkdirs()) {
-                    throw new GATObjectCreationException("could not create specified trigger directory " + triggerDirectory);
-                }
+            
+            if (triggerDirectory == null) {
+        	triggerDirectory = originator;
             }
+
             out.writeObject(triggerDirectory);
             out.writeObject(scheduledType);
             for (WrappedJobInfo jobInfo : jobInfos) {
