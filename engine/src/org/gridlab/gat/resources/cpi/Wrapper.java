@@ -160,14 +160,22 @@ public class Wrapper {
             if (! wrapperCommonDestFile.mkdirs()) {
                 throw new Exception("Could not create directory " + wrapperCommonDest);
             }
+            File triggerDir = GAT.createFile(infos.get(0).getPreferences(), triggerDirectory);
+            if (triggerDir.exists()) {
+                if (! triggerDir.isDirectory()) {
+                    throw new Exception("specified trigger directory " + triggerDirectory
+                            + " exists and is not a directory");
+                }
+            } else if (! triggerDir.mkdirs()) {
+                throw new Exception("could not create specified trigger directory " + triggerDirectory);
+            }
+        
             wrapperCommonDest = wrapperCommonDestFile.getPath();
             if ("true".equals(wrapperCommonTrigger)) {
-                File file = null;
                 try {
-                    file = GAT.createFile(infos.get(0).getPreferences(), triggerDirectory);
-                    FileWaiter w = FileWaiter.createFileWaiter(file);
+                    FileWaiter w = FileWaiter.createFileWaiter(triggerDir);
                     w.waitFor("WrapperCommonTrigger." + wrapperId);
-                    file = GAT.createFile(infos.get(0).getPreferences(),
+                    File file = GAT.createFile(infos.get(0).getPreferences(),
                 	    triggerDirectory.setPath(triggerDirectory.getPath() + "/WrapperCommonTrigger." + wrapperId));
                     file.delete();
                 } catch (Throwable e) {
