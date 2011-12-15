@@ -49,6 +49,28 @@ public class ScheduledExecutor implements RejectedExecutionHandler {
         scheduledExecutor.addJob(r, initialDelay, delay);
     }
     
+    /**
+     * Creates and executes a delayed action that becomes enabled first after the
+     * given delay.
+     * @param r the task to run..
+     * @param delay the delay until the execution.
+     */
+    public static synchronized void schedule(Runnable r, long delay) {
+        if (scheduledExecutor == null) {
+            int sz = 16;
+            String poolSize = System.getProperty("gat.threadpool.size");
+            if (poolSize != null) {
+                try {
+                    sz = Integer.parseInt(poolSize);
+                } catch(Throwable e) {
+                    System.err.println("Warning: could not parse value of gat.threadpool.size property");
+                }
+            }
+            scheduledExecutor = new ScheduledExecutor(sz);
+        }
+        scheduledExecutor.addJob(r, delay);
+    }
+    
     private ScheduledExecutor(int size) {
         executor = new ScheduledThreadPoolExecutor(size, new MyThreadFactory(), this);
         map = new HashMap<Runnable, Future<?>>();
@@ -58,6 +80,11 @@ public class ScheduledExecutor implements RejectedExecutionHandler {
         map.put(r,
                 executor.scheduleWithFixedDelay(r, initialDelay,
                         delay, TimeUnit.MILLISECONDS));
+    }
+    
+    
+    private void addJob(Runnable r, long delay) {
+	executor.schedule(r, delay, TimeUnit.MILLISECONDS);
     }
     
     private void shutdown() {
