@@ -1,8 +1,6 @@
 
 package org.gridlab.gat.resources.cpi;
 
-import ibis.util.ThreadPool;
-
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +12,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.ScheduledExecutor;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -173,62 +172,26 @@ public abstract class SimpleJobBase extends JobCpi {
 
 	public void run() {
 	    try {
-		for (;;) {
-		    try {
-			getJobState(jobID);
-		    } catch (GATInvocationException e) {
-			logger.debug("GATInvocationException caught in thread jobListener");
-			setState(JobState.SUBMISSION_ERROR);
-		    }
-		    if (logger.isDebugEnabled()) {
-			logger.debug("Job Status is:  " + state.toString());
-		    }
-		    if (state != JobState.RUNNING && state != JobState.SCHEDULED) {
-			if (state == JobState.SUBMISSION_ERROR) {
-			    logger.debug("Job submission failed");
-			    break;
-			} else if (state == JobState.STOPPED || state == JobState.POST_STAGING) {
-			    break;
-			}
-		    } else {
-			break;
-		    }
-		    try {
-			Thread.sleep(SLEEP);
-		    } catch(InterruptedException e) {
-			// ignore
-		    }
-		}
-
-		// Now we're in RUNNING state - set the time and start the
-		// jobListener
-
-		setStartTime();
-
-		try {
-		    while (state != JobState.STOPPED && state != JobState.POST_STAGING) {
-			if (state == JobState.SUBMISSION_ERROR) {
-			    logger.error("SshPbs job " + jobID + "failed");
-			    break;
-			}
-			logger.debug("SshPbs Job still running");
-			Thread.sleep(SLEEP);
-			getJobState(jobID);
-		    }
-		    terminate(true, true);
-		} catch (InterruptedException e) {
-		    logger.debug("InterruptedException caught in thread jobListener");
-		    setState(JobState.SUBMISSION_ERROR);
-		} catch (GATInvocationException e) {
-		    logger.debug("GATInvocationException caught in thread jobListener");
+		getJobState(jobID);
+	    } catch (GATInvocationException e) {
+		logger.debug("GATInvocationException caught in jobListener");
+		if (state != JobState.STOPPED && state != JobState.POST_STAGING) {
 		    setState(JobState.SUBMISSION_ERROR);
 		}
-	    } finally {
+	    }
+	    if (state == JobState.SUBMISSION_ERROR) {
+		logger.error("SshPbs job " + jobID + "failed");
+		return;
+	    }
+	    if (state == JobState.STOPPED || state == JobState.POST_STAGING) {
+		terminate(true, true);
 		synchronized(this) {
 		    finished = true;
 		    notifyAll();
 		}
-	    } 
+	    } else {
+		ScheduledExecutor.schedule(this, SLEEP);
+	    }
 	}
 	
 	private synchronized void terminate(boolean fromThread, boolean mustPoststage) {
@@ -286,7 +249,7 @@ public abstract class SimpleJobBase extends JobCpi {
 
     protected void startListener() {
 	jsl = new JobListener(this.jobID, this.Soft);
-	ThreadPool.createNew(jsl, "JobListener " + this.jobID);
+	ScheduledExecutor.schedule(jsl, 10L);
     }
 
     public synchronized JobState getState() {
