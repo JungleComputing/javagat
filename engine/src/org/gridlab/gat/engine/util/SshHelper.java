@@ -189,8 +189,8 @@ public class SshHelper {
             logger.debug("exitCode=" + exitVal);
         }
         
-        if (exitVal > 1) {
-            // bigger than 1 means ssh error and not false as command response
+        if (exitVal == 255) {
+            // 255 means ssh error and not false as command response.
             if (logger.isInfoEnabled()) {
                 logger.info("command failed, error=" + runner.getStderr());
             }
