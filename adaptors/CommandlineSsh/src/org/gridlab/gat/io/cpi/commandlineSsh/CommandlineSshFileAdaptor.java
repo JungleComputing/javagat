@@ -1,7 +1,9 @@
 package org.gridlab.gat.io.cpi.commandlineSsh;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -28,14 +30,17 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         capabilities.put("copy", true);
         capabilities.put("createNewFile", true);  
         capabilities.put("delete", true);
+        capabilities.put("exists", true);
         capabilities.put("getAbsolutePath", true);
         capabilities.put("getAbsoluteFile", true);
         capabilities.put("isDirectory", true);
         capabilities.put("isFile", true);
+        capabilities.put("lastModified", true);
         capabilities.put("length", true);
         capabilities.put("list", true);
         capabilities.put("mkdir", true);
-        capabilities.put("exists", true);
+        capabilities.put("mkdirs", true);
+        capabilities.put("setLastModified", true);
         return capabilities;
     }
     
@@ -90,33 +95,47 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         // TODO: test if remote machine is windows, and if so, fail.	    
     }
 
-    private boolean runSshCommand(boolean writeError, String... params)
+    private boolean runSshCommand(String... params)
             throws GATInvocationException {
-        return runSshCommand(params, writeError, false);
+	return locationUtils.runSshCommand(params).getExitCode() == 0;
     }
-
-    /*
-     * if second parameter is true than stderr will be written to log4j (it is
-     * for commands where we think that failing is an error (like mkdir))
-     */
-    private boolean runSshCommand(String[] params, boolean writeError,
-            boolean nonEmptyOutputMeansSuccess) throws GATInvocationException {
-        
-        CommandRunner runner = locationUtils.runSshCommand(params);
-
-        int exitVal = runner.getExitCode();
-
-        if (exitVal == 1 && writeError) {
+    
+    public long lastModified() throws GATInvocationException {
+	if (localFile != null) {
+	    return localFile.lastModified();
+	}
+	
+	CommandRunner command = locationUtils.runSshCommand("stat", "-c", "%Y", fixedURI.getPath());
+	
+	if (command.getExitCode() != 0) {
             if (logger.isInfoEnabled()) {
-                logger.info("command failed, error=" + runner.getStderr());
+                logger.info("command failed, error = " + command.getStderr());
             }
+            // command failed, but ssh did not --> assume non-existing.
+            return 0;
         }
-        if (exitVal == 0 && nonEmptyOutputMeansSuccess) {
-            return runner.getStdout().length() != 0
-                    || runner.getStderr().length() != 0;
-        }
-        return exitVal == 0;
+	String result = command.getStdout();
+        return Long.parseLong(result.replaceAll("\\s", "")) * 1000L;
     }
+    
+    private String toTouchDateFormat(long date) {
+        Date d = new Date(date);
+        // see man touch for the date format
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmm.ss");
+        return formatter.format(d);
+    }
+    
+    public boolean setLastModified(long lastModified)
+            throws GATInvocationException {
+	if (! exists()) {
+	    return false;
+	}
+        if (localFile != null) {
+            return localFile.setLastModified(lastModified);
+        }
+        return runSshCommand("touch", "-c", "-t", toTouchDateFormat(lastModified), fixedURI.getPath());
+    }
+
 
     public long length() throws GATInvocationException {
 	if (localFile != null) {
@@ -216,7 +235,17 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     }
 
     public boolean mkdir() throws GATInvocationException {
-        return runSshCommand(true, "mkdir", fixedURI.getPath());
+	if (localFile != null) {
+	    return localFile.mkdir();
+	}
+        return runSshCommand("mkdir", fixedURI.getPath());
+    }
+    
+    public boolean mkdirs() throws GATInvocationException {
+	if (localFile != null) {
+	    return localFile.mkdirs();
+	}
+        return runSshCommand("mkdir", "-p", fixedURI.getPath());
     }
     
     public boolean createNewFile() throws GATInvocationException {
@@ -231,36 +260,54 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         if (exists()) {
             return false;
         }
-        return runSshCommand(true, "touch", fixedURI.getPath());
+        return runSshCommand("touch", fixedURI.getPath());
     }
 
     public boolean delete() throws GATInvocationException {
+	if (localFile != null) {
+	    return localFile.delete();
+	}
         if (!exists()) {
             return false;
         }
-        return runSshCommand(true, "rm",  "-rf", fixedURI.getPath());
+        return runSshCommand("rm",  "-rf", fixedURI.getPath());
     }
 
     public boolean isDirectory() throws GATInvocationException {
-        return runSshCommand(true, "test",  "-d", fixedURI.getPath());
+	if (localFile != null) {
+	    return localFile.isDirectory();
+	}
+        return runSshCommand("test",  "-d", fixedURI.getPath());
     }
 
     public boolean isFile() throws GATInvocationException {
-        return runSshCommand(true, "test",  "-f", fixedURI.getPath());
+	if (localFile != null) {
+	    return localFile.isFile();
+	}
+        return runSshCommand("test",  "-f", fixedURI.getPath());
     }
 
     public boolean exists() throws GATInvocationException {
+	if (localFile != null) {
+	    return localFile.exists();
+	}
         // Use "/usr/bin/test", not "test". Solaris version of /bin/sh does not
         // recognize the -e option ... --Ceriel
-        return runSshCommand(true, "/usr/bin/test", "-e", fixedURI.getPath());
+        return runSshCommand("/usr/bin/test", "-e", fixedURI.getPath());
     }
     
     public boolean canRead() throws GATInvocationException {
-        return runSshCommand(true, "/usr/bin/test", "-r", fixedURI.getPath());
+	if (localFile != null) {
+	    return localFile.canRead();
+	}
+        return runSshCommand("/usr/bin/test", "-r", fixedURI.getPath());
     }
     
     public boolean canWrite() throws GATInvocationException {
-        return runSshCommand(true, "/usr/bin/test", "-w", fixedURI.getPath());
+	if (localFile != null) {
+	    return localFile.canWrite();
+	}
+        return runSshCommand("/usr/bin/test", "-w", fixedURI.getPath());
     }
 
     /**
@@ -274,11 +321,11 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         // We don't have to handle the local case, the GAT engine will select
         // the local adaptor.
         dest = fixURI(dest, null);
-        if (fixedURI.refersToLocalHost() && dest.refersToLocalHost()) {
+        if (localFile != null && dest.refersToLocalHost()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("commandlineSsh file: copy local to local");
             }
-            copyLocaltoLocal(location, dest);
+            copyLocaltoLocal(dest);
             return;
         }
 
@@ -291,7 +338,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             return;
         }
 
-        if (fixedURI.refersToLocalHost()) {
+        if (localFile != null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("commandlineSsh file: copy local to remote");
             }
@@ -305,43 +352,27 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                 "commandlineSsh: cannot do third party copy");
     }
 
-    protected void copyLocaltoLocal(URI src, URI dest)
+    protected void copyLocaltoLocal(URI dest)
             throws GATInvocationException {
 
         if (gatContext.getPreferences().containsKey("file.create")) {
             if (((String) gatContext.getPreferences().get("file.create"))
                     .equalsIgnoreCase("true")) {
-                try {
-                    FileInterface destFile = GAT.createFile(gatContext,
-                            gatContext.getPreferences(), dest)
-                            .getFileInterface();
-                    File destinationParentFile = destFile.getParentFile();
-                    if (destinationParentFile != null) {
-                        destinationParentFile.getFileInterface().mkdirs();
-                    }
-                } catch (GATObjectCreationException e) {
-                    throw new GATInvocationException(
-                            "CommandlineSshFileAdaptor", e);
-                }
+        	java.io.File destFile = new java.io.File(dest.getPath());
+        	java.io.File destinationParentFile = destFile.getParentFile();
+        	if (destinationParentFile != null) {
+        	    destinationParentFile.mkdirs();
+        	}
             }
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("CommandlineSsh: Prepared session for location " + src
-                    + "; host: localhost");
-        }
+        ArrayList<String> command = new ArrayList<String>();
+        command.add("cp");
 
-        ArrayList<String> command = locationUtils.getScpCommand();
-
-        File source = null;
         boolean dir = false;
-        try {
-            source = GAT.createFile(gatContext, src);
-        } catch (GATObjectCreationException e) {
-            throw new GATInvocationException("commandlineSsh", e);
-        }
-        if (source.getFileInterface().exists()) {
-            if (source.getFileInterface().isDirectory()) {
+
+        if (exists()) {
+            if (isDirectory()) {
         	dir = true;
             }
         } else {
@@ -365,7 +396,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             command.add("-r");
         }
 
-        command.add(src.getPath());
+        command.add(getPath());
         command.add(dest.getPath());
             
         if (logger.isInfoEnabled()) {
@@ -377,9 +408,8 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                     + runner.getStdout());
         }
         int exitValue = runner.getExitCode();
-        // scp exit value seems to be buggy, so only if the exit status > 1 AND
-        // there's something in the stderr consider it as a failure. --roelof
-        if (exitValue != 0 && runner.getStderr().length() > 0) {
+ 
+        if (exitValue != 0) {
             throw new GATInvocationException("CommandlineSsh command failed: "
                     + runner.getStderr());
         }
