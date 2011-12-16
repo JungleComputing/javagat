@@ -287,10 +287,12 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
         } finally {
             if (srcClient != null) {
-                destroyClient(srcClient, src);
+        	// kill client, we fiddled with the passive/active settings.
+                destroyClient(srcClient, null);
             }
             if (destClient != null) {
-                destroyClient(destClient, dest);
+        	// kill client, we fiddled with the passive/active settings.
+                destroyClient(destClient, null);
             }
             if (tmpFile != null) {
                 try {
@@ -743,20 +745,21 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
         } finally {
             if (fiddle) {
-                setActiveOrPassive(client, gatContext.getPreferences());
-            }
-            if (cwd != null) {
-                try {
-                    client.changeDir(cwd);
-                } catch (ServerException e) {
-                    // ignore? TODO: really kill client
-                } catch (IOException e) {
-                    // ignore? TODO: really kill client
-                } finally {
-                    destroyClient(client, toURI());
-                }
+        	// Kill this client.
+        	destroyClient(client, null);
+            } else if (cwd != null) {
+        	try {
+        	    client.changeDir(cwd);
+        	} catch (Throwable e) {
+        	    destroyClient(client, null);
+        	    client = null;
+        	} finally {
+        	    if (client != null) {
+        		destroyClient(client, toURI());
+        	    }
+        	}
             } else {
-                destroyClient(client, toURI());
+        	destroyClient(client, toURI());
             }
         }
         return null;

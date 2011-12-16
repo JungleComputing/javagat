@@ -152,21 +152,30 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                     }
 
                     if (clientToRemove.size() == 0) {
-                        logger.debug("No FTPClients need to remove from the cache!");
+                	if (logger.isDebugEnabled()) {
+                	    logger.debug("No FTPClients need to remove from the cache!");
+                	}
                     }
 
                     for (String key : clientToRemove) {
                         CachedFTPClient cachedClient = clienttable.remove(key);
-                        logger.debug("Remove client from cache: " + key);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Remove client from cache: " + key);
+                        }
 
                         try {
                             // Wait until the connection is really close
-                            logger.debug("Close client for: " + key);
+                            if (logger.isDebugEnabled()) {
+                        	logger.debug("Close client for: " + key);
+                            }
                             cachedClient.getClient().close(true);
-                            logger.debug("Close client for: " + key + " DONE!");
+                            if (logger.isDebugEnabled()) {
+                        	logger.debug("Close client for: " + key + " DONE!");
+                            }
                         } catch (Exception e) {
-                            logger.debug("Cannot close client for: " + key);
-                            e.printStackTrace();
+                            if (logger.isDebugEnabled()) {
+                        	logger.debug("Cannot close client for: " + key, e);
+                            }
                         }
                     }
                 }// End synchronized
@@ -535,13 +544,17 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
      * returns <code>false</code> otherwise.
      */
     private static boolean putInCache(String key, FTPClient c) {
-        logger.debug("putInCache( " + key + " )");
+	if (logger.isDebugEnabled()) {
+	    logger.debug("putInCache( " + key + " )");
+	}
 
         synchronized (clienttable) {
             if (!clienttable.containsKey(key)) {
                 CachedFTPClient cachedClient = new CachedFTPClient(c);
                 clienttable.put(key, cachedClient);
-                logger.debug("putInCache: true");  
+                if (logger.isDebugEnabled()) {
+                    logger.debug("putInCache: true");  
+                }
                 if (! cleanupStarted) {
                     cleanupStarted = true;
                     ScheduledExecutor.schedule(cacheCleanupRunnable, CONNECTION_LIFETIME_IN_CACHE,
@@ -551,7 +564,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             }
         }
 
-        logger.debug("putInCache: false");           
+        if (logger.isDebugEnabled()) {
+            logger.debug("putInCache: false");
+        }
         return false;
     }
 
@@ -760,6 +775,20 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         if (logger.isDebugEnabled()) {
             logger.debug("doWorkDestroyClient");
         }
+        
+        if (! USE_CLIENT_CACHING || hostURI == null) {
+            try {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("FTPClient.close()");
+                }
+                c.close(true);
+            } catch (Exception e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("doWorkDestroyClient, closing client, got exception (ignoring): " + e);
+                }
+                logger.debug("Cannot close connection", e);
+            }
+        }
 
         GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(context, "gridftp", hostURI,
                 DEFAULT_GRIDFTP_PORT);
@@ -772,7 +801,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             logger.error("Cannot obtain credential to create cache key.", e1);
         }
 
-        if (!USE_CLIENT_CACHING || null == cacheKey || !putInCache(cacheKey, c)) {
+        if (null == cacheKey || !putInCache(cacheKey, c)) {
             try {
                 if (logger.isDebugEnabled()) {
                     logger.debug("FTPClient.close()");
