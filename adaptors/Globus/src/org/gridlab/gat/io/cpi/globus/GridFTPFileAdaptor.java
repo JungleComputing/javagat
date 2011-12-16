@@ -316,7 +316,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
         boolean copyDone = false;
 
-        // Retry this operation every second
+        // Retry this operation every half second
         while (copyDone == false) {
             boolean srcCanLock = false;
             boolean destCanLock = false;
@@ -342,7 +342,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                     }
 
                     try {
-                        Thread.sleep(2000);
+                        Thread.sleep(500);
                     } catch (InterruptedException e) {
                         // e.printStackTrace();
                     }
@@ -499,7 +499,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         FTPClient client = doWorkCreateClient(gatContext, additionalPreferences, hostURI);
         //Only create a lock when a client has been successfully created.
         if (client != null) {
-            URI src = fixURI(toURI());
+            URI src = fixURI(hostURI);
             // try to get the lock for this host
             ReentrantLock lock = getHostLock(src);
             lock.lock();
@@ -748,7 +748,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                 doWorkDestroyClient(context, c, hostURI);
             }
         } finally {
-            URI src = fixURI(toURI());
+            URI src = fixURI(hostURI);
             ReentrantLock lock = getHostLock(src);
             if (lock != null && lock.isLocked()) {
                 lock.unlock();
