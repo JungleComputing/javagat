@@ -1004,7 +1004,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
             return cachedInfo;
         } catch (Throwable e) {
-            logger.info("getInfo() got exception", e);
+            logger.debug("getInfo() got exception", e);
             if (e instanceof ServerException) {
                 if (((ServerException) e).getCode() == ServerException.SERVER_REFUSED) {
                     // This may happen when the file does not exist ...
