@@ -216,7 +216,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         }
         if (job != null) {
             try {
-        	job.removeListener(this);
+        	job.destroy();
             } catch(Throwable e) {
         	// ignore
             }
@@ -234,7 +234,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 }
                 if (job != null) {
                     try {
-                	job.removeListener(this);
+                	job.destroy();
                     } catch(Throwable e1) {
                 	// ignore
                     }
@@ -248,7 +248,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             if (state != JobState.POST_STAGING && !skipPostStage) {
                 if (job != null) {
                     try {
-                	job.removeListener(this);
+                	job.destroy();
                     } catch(Throwable e) {
                 	// ignore
                     }
