@@ -328,7 +328,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                 srcCanLock = srcLock.tryLock();
                 logger.debug("source can be locked: " + srcCanLock);
                 destCanLock = destLock.tryLock();
-                logger.debug("dest can be locked: " + srcCanLock);                              
+                logger.debug("dest can be locked: " + destCanLock);                              
 
             } finally {
                 // we cannot obtain both locks
@@ -620,8 +620,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                         }
                     } catch (Exception except) {
                         if (logger.isDebugEnabled()) {
-                            logger.debug("could not reuse cached client: " + except);
-                            except.printStackTrace();
+                            logger.debug("could not reuse cached client: ", except);
                         }
 
                         client = null;
@@ -788,6 +787,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                 }
                 logger.debug("Cannot close connection", e);
             }
+            return;
         }
 
         GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(context, "gridftp", hostURI,
