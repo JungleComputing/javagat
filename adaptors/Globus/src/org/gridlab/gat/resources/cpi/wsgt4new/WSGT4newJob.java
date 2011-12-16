@@ -1,5 +1,7 @@
 package org.gridlab.gat.resources.cpi.wsgt4new;
 
+import ibis.util.ThreadPool;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -212,6 +214,13 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 // ignored
             }
         }
+        if (job != null) {
+            try {
+        	job.removeListener(this);
+            } catch(Throwable e) {
+        	// ignore
+            }
+        }
     }
 
     private synchronized void stop(boolean skipPostStage)
@@ -223,12 +232,27 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 if (state != JobState.POST_STAGING && !skipPostStage) {
                     sandbox.retrieveAndCleanup(this);
                 }
+                if (job != null) {
+                    try {
+                	job.removeListener(this);
+                    } catch(Throwable e1) {
+                	// ignore
+                    }
+                }
                 setState(JobState.SUBMISSION_ERROR);
                 finished();
                 ScheduledExecutor.remove(this);
+                
                 throw new GATInvocationException("WSGT4newJob", e);
             }
             if (state != JobState.POST_STAGING && !skipPostStage) {
+                if (job != null) {
+                    try {
+                	job.removeListener(this);
+                    } catch(Throwable e) {
+                	// ignore
+                    }
+                }
                 setState(JobState.POST_STAGING);
                 sandbox.retrieveAndCleanup(this);
                 setState(JobState.STOPPED);
@@ -357,16 +381,14 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             // setState(STOPPED);
             // setStopTime();
         } else if (jobState.equals(StateEnumeration.Done)) {
+            // Create separate thread to do post-staging. We don't want to keep the
+            // ScheduledThread busy too long. 
             ScheduledExecutor.remove(this);
             setState(JobState.POST_STAGING);
-            sandbox.retrieveAndCleanup(this);
-            setState(JobState.STOPPED);
-            setStopTime();
+            ThreadPool.createNew(new FinishUp(JobState.STOPPED), "finisher");
         } else if (jobState.equals(StateEnumeration.Failed)) {
             ScheduledExecutor.remove(this);
-            setState(JobState.POST_STAGING);
-            sandbox.retrieveAndCleanup(this);
-            setState(JobState.SUBMISSION_ERROR);
+            ThreadPool.createNew(new FinishUp(JobState.SUBMISSION_ERROR), "finisher");
         } else if (jobState.equals(StateEnumeration.StageIn)) {
             setState(JobState.PRE_STAGING);
         } else if (jobState.equals(StateEnumeration.StageOut)) {
@@ -377,6 +399,24 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 && state != JobState.PRE_STAGING) {
             setState(JobState.INITIAL);
         }
+    }
+    
+    private class FinishUp implements Runnable {
+	private JobState state;
+
+	public FinishUp(JobState state) {
+	    this.state = state;
+	}
+	
+	public void run() {
+	    job.removeListener(WSGT4newJob.this);
+	    setState(JobState.POST_STAGING);
+            sandbox.retrieveAndCleanup(WSGT4newJob.this);
+            if (state == JobState.STOPPED) {
+        	setStopTime();
+            }
+            setState(state);
+	}
     }
 
     /*
