@@ -499,7 +499,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         int port = brokerURI.getPort(8443);
 
         String path = "/wsrf/services/ManagedJobFactoryService";
-        if (brokerURI.getUnresolvedPath() != null) {
+        if (brokerURI.getUnresolvedPath() != null && ! "".equals(brokerURI.getUnresolvedPath())) {
             path = brokerURI.getUnresolvedPath();
             if (!path.startsWith("/")) {
                 path = "/" + path;
