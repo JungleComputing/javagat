@@ -628,6 +628,11 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                             logger.debug("could not reuse cached client: ", except);
                         }
 
+                        try {
+                            client.close(true);
+                        } catch(Throwable e) {
+                            // ignore
+                        }
                         client = null;
                     }
                 }
@@ -714,6 +719,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                     logger.debug("authenticating done using credential " + credential);
                 }
             } catch (ServerException se) {
+        	if (i == retry - 1) {
+        	    throw se;
+        	}
                 if (se.getMessage().contains("451 active connection to server failed")) {
                     try {
                         Thread.sleep(5000);
@@ -722,6 +730,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                     }
                     continue;
                 }
+                throw se;
             }
             break;
         }
