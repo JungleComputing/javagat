@@ -341,8 +341,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                         destLock.unlock();
                     }
 
-                    try {
-                        Thread.sleep(500);
+                    try  {
+                	long millis = Math.round(Math.random() * 500.0);
+                        Thread.sleep(millis);
                     } catch (InterruptedException e) {
                         // e.printStackTrace();
                     }
@@ -515,15 +516,19 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
      * @return a {@link GridFTPClient} instance from the cache.
      */
     private static GridFTPClient getFromCache(String key) {
-        logger.debug("getFromCache( " + key + " )");
+	if (logger.isDebugEnabled()) {
+	    logger.debug("getFromCache( " + key + " )");
+	}
         CachedFTPClient cachedClient;
 
         synchronized (clienttable) {
             if (clienttable.containsKey(key)) {
-                logger.debug("getFromCache=true");
+        	if (logger.isDebugEnabled()) {
+        	    logger.debug("getFromCache=true");
+        	}
                 cachedClient = clienttable.remove(key);
                 return (GridFTPClient) cachedClient.getClient();
-            } else {
+            } else if (logger.isDebugEnabled()) {
                 logger.debug(" getFromCache=false");
             }
         }
