@@ -506,7 +506,12 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw e;
         } catch(Throwable e) {
             if (wsgt4job != null) {
-        	wsgt4job.finishJob();
+        	synchronized(wsgt4job) {
+        	    Job.JobState state = wsgt4job.getState();
+        	    if (state != Job.JobState.STOPPED) {
+        		wsgt4job.finishJob();
+        	    }
+        	}
             } else {
         	sandbox.removeSandboxDir();
             }

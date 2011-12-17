@@ -232,6 +232,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         	// ignore
             }
         }
+        setState(JobState.STOPPED);
     }
 
     private synchronized void stop(boolean skipPostStage)
@@ -245,7 +246,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                     job.destroy();
                     job = null;
                 } catch (Throwable e) {
-                    if (state != JobState.POST_STAGING && !skipPostStage) {
+                    if (state != JobState.SCHEDULED && state != JobState.POST_STAGING && !skipPostStage) {
                         sandbox.retrieveAndCleanup(this);
                     }
                     setState(JobState.SUBMISSION_ERROR);
@@ -256,12 +257,13 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 }
             }
             if (state == JobState.PRE_STAGING || state == JobState.SCHEDULED) {
-                setState(JobState.STOPPED);
+        	// Don't post-stage, the program has not done anything yet.
+        	finishJob();
             } else if (state != JobState.POST_STAGING && !skipPostStage) {
                 setState(JobState.POST_STAGING);
                 sandbox.retrieveAndCleanup(this);
-                setState(JobState.STOPPED);
             }
+            setState(JobState.STOPPED);
         } else {
             if (logger.isDebugEnabled()) {
                 logger.debug("job not running anymore!");
