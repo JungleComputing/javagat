@@ -193,14 +193,16 @@ public class Sandbox {
     }
 
     public void removeSandboxDir() throws GATInvocationException {
-        URI location = null;
-        try {
-            location = new URI("any://" + authority + "/" + sandbox);
-        } catch (URISyntaxException e) {
-            throw new GATInvocationException("sandbox", e);
-        }
+	if (deleteSandboxDir) {
+	    URI location = null;
+	    try {
+		location = new URI("any://" + authority + "/" + sandbox);
+	    } catch (URISyntaxException e) {
+		throw new GATInvocationException("sandbox", e);
+	    }
 
-        FileCpi.recursiveDeleteDirectory(gatContext, location);
+	    FileCpi.recursiveDeleteDirectory(gatContext, location);
+	}
     }
 
     private String getSandboxName() {
@@ -253,7 +255,7 @@ public class Sandbox {
                 logger.info("prestage FAILED, cleaning up");
             }
             // remove / wipe files we already prestaged.
-            retrieveAndCleanup(null);
+            removeSandboxDir();
             throw new FilePrestageException("Sandbox", e);
         } finally {
             preStageTime = System.currentTimeMillis() - start;
