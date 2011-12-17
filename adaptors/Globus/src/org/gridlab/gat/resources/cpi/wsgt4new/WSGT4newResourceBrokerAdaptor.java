@@ -100,17 +100,23 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
     public static void init() {
         GATEngine.registerUnmarshaller(WSGT4newJob.class);
     }
+
+    private EndpointReferenceType endpoint;
+    private GSSCredential cred;
+    private long lastCredTime;
     
-    protected GSSCredential getCred() throws GATInvocationException {
-        GSSCredential cred = null;
- 
-        try {
-            cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                    "wsgt4new", brokerURI, ResourceManagerContact.DEFAULT_PORT);
-        } catch (Exception e) {
-            throw new GATInvocationException(
-                    "WSGT4Job: could not initialize credentials, " + e);
-        }
+    protected synchronized GSSCredential getCred() throws GATInvocationException {
+	long time = System.currentTimeMillis() - lastCredTime;
+	if (cred == null || time > 15000) {
+	    try {
+		cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
+			"wsgt4new", brokerURI, ResourceManagerContact.DEFAULT_PORT);
+                lastCredTime = System.currentTimeMillis();
+	    } catch (Exception e) {
+		throw new GATInvocationException(
+			"WSGT4Job: could not initialize credentials, " + e);
+	    }
+	}
         return cred;
     }
 
@@ -359,12 +365,36 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "WSGT4ResourceBroker: the job description does not contain a software description");
         }
 
-        // create an endpoint reference type
-        EndpointReferenceType endpoint = new EndpointReferenceType();
-        try {
-            endpoint.setAddress(new Address(createAddressString()));
-        } catch (MalformedURIException e) {
-            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+        synchronized(this) {
+            if (endpoint == null) {
+                // create an endpoint reference type
+                endpoint = new EndpointReferenceType();
+                try {
+                    endpoint.setAddress(new Address(createAddressString()));
+                } catch (MalformedURIException e) {
+                    throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+                }
+
+                String factoryType = (String) gatContext.getPreferences().get(
+                        "wsgt4new.factory.type");
+                if (factoryType == null || factoryType.equals("")) {
+                    factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.FORK;
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("no factory type supplied, using default: "
+                                + ManagedJobFactoryConstants.FACTORY_TYPE.FORK);
+                    }
+                }
+
+                ReferencePropertiesType props = new ReferencePropertiesType();
+                SimpleResourceKey key = new SimpleResourceKey(
+                        ManagedJobConstants.RESOURCE_KEY_QNAME, factoryType);
+                try {
+                    props.add(key.toSOAPElement());
+                } catch (SerializationException e) {
+                    throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+                }
+                endpoint.setProperties(props);
+            }
         }
 
         // test whether gram sandbox should be used
@@ -380,8 +410,10 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
                 logger.debug("using gram sandbox");
             }
         }
-        WSGT4newJob wsgt4job = new WSGT4newJob(gatContext, description, sandbox);
+        WSGT4newJob wsgt4job = null;
+        
         try {
+            wsgt4job = new WSGT4newJob(gatContext, description, sandbox);
             Job job = null;
             if (description instanceof WrapperJobDescription) {
                 WrapperJobCpi tmp = new WrapperJobCpi(gatContext, wsgt4job,
@@ -400,6 +432,10 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             if (sandbox != null) {
                 wsgt4job.setState(Job.JobState.PRE_STAGING);
                 sandbox.prestage();
+            }
+
+            if (wsgt4job.stopped) {
+                throw new GATInvocationException("Job stopped before it was started");
             }
 
             // create a gramjob according to the jobdescription
@@ -423,6 +459,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
                 gramjob.setAuthorization(HostAuthorization.getInstance());
             }
             // end modification.
+
             gramjob.setMessageProtectionType(Constants.ENCRYPTION);
             gramjob.setDelegationEnabled(true);
 
@@ -431,26 +468,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
             // wsgt4 job object listens to the gram job
             gramjob.addListener(wsgt4job);
-
-            String factoryType = (String) gatContext.getPreferences().get(
-                    "wsgt4new.factory.type");
-            if (factoryType == null || factoryType.equals("")) {
-                factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.FORK;
-                if (logger.isDebugEnabled()) {
-                    logger.debug("no factory type supplied, using default: "
-                            + ManagedJobFactoryConstants.FACTORY_TYPE.FORK);
-                }
-            }
-
-            ReferencePropertiesType props = new ReferencePropertiesType();
-            SimpleResourceKey key = new SimpleResourceKey(
-                    ManagedJobConstants.RESOURCE_KEY_QNAME, factoryType);
-            try {
-                props.add(key.toSOAPElement());
-            } catch (SerializationException e) {
-                throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
-            }
-            endpoint.setProperties(props);
 
             UUIDGen uuidgen = UUIDGenFactory.getUUIDGen();
             String submissionID = "uuid:" + uuidgen.nextUUID();
@@ -481,8 +498,19 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
             return job;
         } catch(GATInvocationException e) {
-            wsgt4job.finishJob();
+            if (wsgt4job != null) {
+        	wsgt4job.finishJob();
+            } else {
+        	sandbox.removeSandboxDir();
+            }
             throw e;
+        } catch(Throwable e) {
+            if (wsgt4job != null) {
+        	wsgt4job.finishJob();
+            } else {
+        	sandbox.removeSandboxDir();
+            }
+            throw new GATInvocationException("Job creation failed", e);
         }
     }
 
