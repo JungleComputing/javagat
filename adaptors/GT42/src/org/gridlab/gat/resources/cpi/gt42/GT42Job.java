@@ -1,5 +1,7 @@
 package org.gridlab.gat.resources.cpi.gt42;
 
+import ibis.util.ThreadPool;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,6 +65,8 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
 
     private String submissionID;
 
+    boolean stopped = false;
+
     protected GT42Job(GATContext gatContext, JobDescription jobDescription,
             Sandbox sandbox) {
         super(gatContext, jobDescription, sandbox);
@@ -84,7 +88,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
         sandbox.setContext(gatContext);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("reconstructing wsgt4newjob: " + sj);
+            logger.debug("reconstructing GT42Job: " + sj);
         }
 
         this.submissionID = sj.getJobId();
@@ -177,10 +181,16 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
             }
             fireMetric(v);
             if (state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR) {
-                try {
-                    stop(false);
-                } catch (GATInvocationException e) {
-                    // ignore
+                finished();
+                ScheduledExecutor.remove(this);
+                if (job != null) {
+                    job.removeListener(this);
+                    try {
+                        job.terminate(true, false, job.isDelegationEnabled());
+                        job = null;
+                    } catch(Throwable e) {
+                        // ignore
+                    }
                 }
             }
         }
@@ -197,6 +207,15 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
                 // ignored
             }
         }
+        if (job != null) {
+            job.removeListener(this);
+            try {
+                job.terminate(true, false, job.isDelegationEnabled());
+                job = null;
+            } catch(Throwable e) {
+                // ignore
+            }
+        }
     }
 
     public synchronized void stop() throws GATInvocationException {
@@ -207,12 +226,14 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
 
     private synchronized void stop(boolean skipPostStage)
         throws GATInvocationException {
+        stopped = true;
         if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
             try {
                 // Equivalent of job.cancel, which is deprecated.
+                job.removeListener(this);
                 job.terminate(true, false, job.isDelegationEnabled());
-                job.unbind();
-            } catch (Exception e) {
+                job = null;
+            } catch (Throwable e) {
                 if (state != JobState.POST_STAGING && !skipPostStage) {
                     sandbox.retrieveAndCleanup(this);
                 }
@@ -221,7 +242,9 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
                 ScheduledExecutor.remove(this);
                 throw new GATInvocationException("GT4.2 Job", e);
             }
-            if (state != JobState.POST_STAGING && !skipPostStage) {
+            if (state == JobState.PRE_STAGING || state == JobState.SCHEDULED) {
+                setState(JobState.STOPPED);
+            } else if (state != JobState.POST_STAGING && !skipPostStage) {
                 setState(JobState.POST_STAGING);
                 sandbox.retrieveAndCleanup(this);
                 setState(JobState.STOPPED);
@@ -272,7 +295,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
             m.put("stoptime", stoptime);
         }
         m.put("poststage.exception", postStageException);
-        m.put("resourcebroker", "WSGT4new");
+        m.put("resourcebroker", "GT42");
         m
             .put(
                     "exitvalue",
@@ -311,7 +334,10 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
                 || jobState.equals(StateEnumeration.Failed)
                 || jobState.equals(newState)) {
             return;
-                }
+        } else if (jobState != null && jobState.equals(newState)) {
+            return;
+        }
+
         jobState = newState;
 
         boolean holding = job.isHolding();
@@ -341,14 +367,13 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
             // setState(STOPPED);
             // setStopTime();
         } else if (jobState.equals(StateEnumeration.Done)) {
-            setState(JobState.POST_STAGING);
-            sandbox.retrieveAndCleanup(this);
-            setState(JobState.STOPPED);
-            setStopTime();
+            // Create separate thread to do post-staging. We don't want to keep the
+            // ScheduledThread busy too long.
+            ScheduledExecutor.remove(this);
+            ThreadPool.createNew(new FinishUp(JobState.STOPPED), "finisher");
         } else if (jobState.equals(StateEnumeration.Failed)) {
-            setState(JobState.POST_STAGING);
-            sandbox.retrieveAndCleanup(this);
-            setState(JobState.SUBMISSION_ERROR);
+            ScheduledExecutor.remove(this);
+            ThreadPool.createNew(new FinishUp(JobState.SUBMISSION_ERROR), "finisher");
         } else if (jobState.equals(StateEnumeration.StageIn)) {
             setState(JobState.PRE_STAGING);
         } else if (jobState.equals(StateEnumeration.StageOut)) {
@@ -358,7 +383,34 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
         } else if (jobState.equals(StateEnumeration.Unsubmitted)
                 && state != JobState.PRE_STAGING) {
             setState(JobState.INITIAL);
+        }
+    }
+
+    private class FinishUp implements Runnable {
+	private JobState state;
+
+	public FinishUp(JobState state) {
+	    this.state = state;
+	}
+	
+	public void run() {
+            if (job != null) {
+                job.setDelegationEnabled(false);
+                job.removeListener(GT42Job.this);
+                try {
+                    job.destroy();
+                    job = null;
+                } catch(Throwable e) {
+                    // ignore
                 }
+            }
+	    setState(JobState.POST_STAGING);
+            sandbox.retrieveAndCleanup(GT42Job.this);
+            if (state == JobState.STOPPED) {
+        	setStopTime();
+            }
+            setState(state);
+	}
     }
 
     /*

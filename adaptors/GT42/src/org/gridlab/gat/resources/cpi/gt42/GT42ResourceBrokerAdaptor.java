@@ -93,14 +93,21 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
         GATEngine.registerUnmarshaller(GT42Job.class);
     }
 
-    protected GSSCredential getCred() throws GATInvocationException {
-        GSSCredential cred = null;
-        try {
-            cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                    "gt42", brokerURI, ResourceManagerContact.DEFAULT_PORT);
-        } catch (Exception e) {
-            throw new GATInvocationException(
-                    "GT42Job: could not initialize credentials, " + e);
+    private EndpointReferenceType endpoint;
+    private GSSCredential cred;
+    private long lastCredTime;
+
+    protected synchronized GSSCredential getCred() throws GATInvocationException {
+        long time = System.currentTimeMillis() - lastCredTime;
+        if (cred == null || time > 15000) {
+            try {
+                cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
+                        "gt42", brokerURI, ResourceManagerContact.DEFAULT_PORT);
+                lastCredTime = System.currentTimeMillis();
+            } catch (Exception e) {
+                throw new GATInvocationException(
+                        "GT42Job: could not initialize credentials, " + e);
+            }
         }
         return cred;
     }
@@ -306,23 +313,51 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "GT4ResourceBroker: the job description does not contain a software description");
         }
 
-        // create an endpoint reference type
-        EndpointReferenceType endpoint = new EndpointReferenceType();
-        try {
+        synchronized(this) {
+            if (endpoint == null) {
+                // create an endpoint reference type
+                EndpointReferenceType endpoint = new EndpointReferenceType();
+                try {
 
-            // setAddress method is changed. His parameter is an
-            // AttributedUriType
-            // AttributedURIType doesn't have any documentation
-            String address = createAddressString();
-            AttributedURIType attributedAddress = new AttributedURIType(address);
-            endpoint.setAddress(attributedAddress);
+                    // setAddress method is changed. His parameter is an
+                    // AttributedUriType
+                    // AttributedURIType doesn't have any documentation
+                    String address = createAddressString();
+                    AttributedURIType attributedAddress = new AttributedURIType(address);
+                    endpoint.setAddress(attributedAddress);
 
-            // The original code from WSGT4ResourceBroker was
-            // endpoint.setAddress(new Address(createAddressString()));
+                    // The original code from WSGT4ResourceBroker was
+                    // endpoint.setAddress(new Address(createAddressString()));
 
-        } catch (Exception e) {// Ho modificato anche il tipo di eccezione
-                                // sollevata
-            throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
+                    String factoryType = (String) gatContext.getPreferences().get(
+                            "GT42.factory.type");
+                    if (factoryType == null || factoryType.equals("")) {
+                        factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.FORK;
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("no factory type supplied, using default: "
+                                    + ManagedJobFactoryConstants.FACTORY_TYPE.FORK);
+                        }
+                    }
+                    /*
+                     * ReferencePropertiesType doen't exist anymore ReferencePropertiesType
+                     * props = new ReferencePropertiesType();
+                     */
+
+                    ReferenceParametersType params = new ReferenceParametersType();
+                    SimpleResourceKey key = new SimpleResourceKey(
+                            ManagedJobConstants.RESOURCE_KEY_QNAME, factoryType);
+                    try {
+                        params.add(key.toSOAPElement());
+                    } catch (SerializationException e) {
+                        throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
+                    }
+
+                    endpoint.setParameters(params);
+                } catch (Exception e) {// Ho modificato anche il tipo di eccezione
+                                        // sollevata
+                    throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
+                }
+            }
         }
 
         // test whether gram sandbox should be used
@@ -338,116 +373,110 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
                 logger.debug("using gram sandbox");
             }
         }
-        GT42Job gt42job = new GT42Job(gatContext, description, sandbox);
 
-        Job job = null;
+        GT42Job gt42job = null;
 
-        if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, gt42job, listener,
-                    metricDefinitionName);
-            listener = tmp;
-            job = tmp;
-        } else {
-            job = gt42job;
-        }
-
-        if (listener != null && metricDefinitionName != null) {
-            Metric metric = gt42job.getMetricDefinitionByName(metricDefinitionName)
-                    .createMetric(null);
-            gt42job.addMetricListener(listener, metric);
-        }
-
-        if (sandbox != null) {
-            gt42job.setState(Job.JobState.PRE_STAGING);
-            sandbox.prestage();
-        }
-
-        GramJob gramjob = null;
         try {
+            gt42job = new GT42Job(gatContext, description, sandbox);
+            Job job;
 
-            gramjob = new GramJob(createRSL(description, sandbox,
-                    useGramSandbox));
-
-        } catch (RSLParseException e) {
-
-            throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
-
-        }
-
-        // Was: gramjob.setAuthorization(HostAuthorization.getInstance());
-        // Modified to use a supplied credential. --Ceriel
-        GSSCredential cred = getCred();
-        if (cred != null) {
-            gramjob.setCredentials(cred);
-            if (logger.isDebugEnabled()) {
-                logger.debug("submitJob: credential = " + cred);
+            if (description instanceof WrapperJobDescription) {
+                WrapperJobCpi tmp = new WrapperJobCpi(gatContext, gt42job, listener,
+                        metricDefinitionName);
+                listener = tmp;
+                job = tmp;
+            } else {
+                job = gt42job;
             }
-        } else {
-            gramjob.setAuthorization(HostAuthorization.getInstance());
-        }
-        // end modification.
-        gramjob.setMessageProtectionType(Constants.ENCRYPTION);
-        gramjob.setDelegationEnabled(true);
 
-        // inform the wsgt4 job of which gram job is related to it.
-        gt42job.setGramJob(gramjob);
-
-        String factoryType = (String) gatContext.getPreferences().get(
-                "GT42.factory.type");
-        if (factoryType == null || factoryType.equals("")) {
-            factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.FORK;
-            if (logger.isDebugEnabled()) {
-                logger.debug("no factory type supplied, using default: "
-                        + ManagedJobFactoryConstants.FACTORY_TYPE.FORK);
+            if (listener != null && metricDefinitionName != null) {
+                Metric metric = gt42job.getMetricDefinitionByName(metricDefinitionName)
+                        .createMetric(null);
+                gt42job.addMetricListener(listener, metric);
             }
-        }
-        /*
-         * ReferencePropertiesType doen't exist anymore ReferencePropertiesType
-         * props = new ReferencePropertiesType();
-         */
 
-        ReferenceParametersType params = new ReferenceParametersType();
-        SimpleResourceKey key = new SimpleResourceKey(
-                ManagedJobConstants.RESOURCE_KEY_QNAME, factoryType);
-        try {
-            params.add(key.toSOAPElement());
-        } catch (SerializationException e) {
-            throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
-        }
+            if (sandbox != null) {
+                gt42job.setState(Job.JobState.PRE_STAGING);
+                sandbox.prestage();
+            }
 
-        endpoint.setParameters(params);
+            if (gt42job.stopped) {
+                throw new GATInvocationException("Job stopped before it was started");
+            }
 
-        UUIDGen uuidgen = UUIDGenFactory.getUUIDGen();
-        String submissionID = "uuid:" + uuidgen.nextUUID();
+            GramJob gramjob = null;
+            try {
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("submission id for job: " + submissionID);
-        }
-        try {
+                gramjob = new GramJob(createRSL(description, sandbox,
+                        useGramSandbox));
+
+            } catch (RSLParseException e) {
+
+                throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
+
+            }
+
+            // Was: gramjob.setAuthorization(HostAuthorization.getInstance());
+            // Modified to use a supplied credential. --Ceriel
+            GSSCredential cred = getCred();
+            if (cred != null) {
+                gramjob.setCredentials(cred);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("submitJob: credential = " + cred);
+                }
+            } else {
+                gramjob.setAuthorization(HostAuthorization.getInstance());
+            }
+            // end modification.
+            gramjob.setMessageProtectionType(Constants.ENCRYPTION);
+            gramjob.setDelegationEnabled(true);
+
+            // inform the wsgt4 job of which gram job is related to it.
+            gt42job.setGramJob(gramjob);
+
+
+            UUIDGen uuidgen = UUIDGenFactory.getUUIDGen();
+            String submissionID = "uuid:" + uuidgen.nextUUID();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("submission id for job: " + submissionID);
+            }
+
             // second parameter is batch, should be set to false.
             // third parameter is limitedDelegation, currently hardcoded to false
             gramjob.submit(endpoint, false, false, submissionID);
+
+            gt42job.submitted();
+            
+            String handle = gramjob.getHandle();
+            try {
+                String handleHost = new URI(handle).getHost();
+                handle = handle.replace(handleHost, host);
+            } catch (URISyntaxException e) {
+                // ignored
+            }
+
+            gt42job.setSubmissionID(handle);
+
+            // wsgt4 job object listens to the gram job
+            gramjob.addListener(gt42job);
+
+            return job;
+        } catch(GATInvocationException e) {
+            if (gt42job != null) {
+                gt42job.finishJob();
+            } else {
+                sandbox.removeSandboxDir();
+            }
+            throw e;
         } catch (Exception e) {
-            gt42job.finishJob();
+            if (gt42job != null) {
+                gt42job.finishJob();
+            } else {
+                sandbox.removeSandboxDir();
+            }
             throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
         }
-
-        gt42job.submitted();
-        
-        String handle = gramjob.getHandle();
-        try {
-            String handleHost = new URI(handle).getHost();
-            handle = handle.replace(handleHost, host);
-        } catch (URISyntaxException e) {
-            // ignored
-        }
-
-        gt42job.setSubmissionID(handle);
-
-        // wsgt4 job object listens to the gram job
-        gramjob.addListener(gt42job);
-
-        return job;
     }
 
     // -------------------------------------------------------------------------------
@@ -465,7 +494,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
         int port = brokerURI.getPort(8443);
 
         String path = "/wsrf/services/ManagedJobFactoryService";
-        if (brokerURI.getUnresolvedPath() != null) {
+        if (brokerURI.getUnresolvedPath() != null && ! "".equals(brokerURI.getUnresolvedPath())) {
             path = brokerURI.getUnresolvedPath();
             if (!path.startsWith("/")) {
                 path = "/" + path;
