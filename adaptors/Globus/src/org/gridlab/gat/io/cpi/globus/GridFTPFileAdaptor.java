@@ -499,7 +499,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         FTPClient client = doWorkCreateClient(gatContext, additionalPreferences, hostURI);
         //Only create a lock when a client has been successfully created.
         if (client != null) {
-            URI src = fixURI(hostURI);
+            URI src = fixURI(toURI());
             // try to get the lock for this host
             ReentrantLock lock = getHostLock(src);
             lock.lock();
@@ -748,7 +748,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                 doWorkDestroyClient(context, c, hostURI);
             }
         } finally {
-            URI src = fixURI(hostURI);
+            URI src = fixURI(toURI());
             ReentrantLock lock = getHostLock(src);
             if (lock != null && lock.isLocked()) {
                 lock.unlock();
