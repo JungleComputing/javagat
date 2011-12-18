@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.trilead.ssh2.Connection;
+import com.trilead.ssh2.DebugLogger;
 import com.trilead.ssh2.SCPClient;
 import com.trilead.ssh2.Session;
 import com.trilead.ssh2.StreamGobbler;
@@ -987,6 +988,15 @@ public class SshTrileadFileAdaptor extends FileCpi {
             }
             newConnection = new Connection(host, fixedURI
         	    .getPort(SSH_PORT));
+            if (logger.isDebugEnabled()) {
+        	DebugLogger log = new DebugLogger() {
+
+		    public void log(int arg0, String arg1, String arg2) {
+			logger.debug(arg1 + ": " + arg2);
+		    }
+        	};
+        	newConnection.enableDebugging(true, log);
+            }
             newConnection.setClient2ServerCiphers(client2server);
             newConnection.setServer2ClientCiphers(server2client);
             try {
