@@ -131,107 +131,115 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         // create the sandbox
         Sandbox sandbox = new Sandbox(gatContext, description, authority, null,
                 true, false, false, false);
-        // create the job
-        CommandlineSshJob commandlineSshJob = new CommandlineSshJob(gatContext,
-                description, sandbox);
-        Job job = null;
-        if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, commandlineSshJob,
-                    listener, metricDefinitionName);
-            listener = tmp;
-            job = tmp;
-        } else {
-            job = commandlineSshJob;
-        }
-        if (listener != null && metricDefinitionName != null) {
-            Metric metric = commandlineSshJob.getMetricDefinitionByName(metricDefinitionName)
-                    .createMetric(null);
-            commandlineSshJob.addMetricListener(listener, metric);
-        }
-
-        // set the state to prestaging
-        commandlineSshJob.setState(Job.JobState.PRE_STAGING);
-        // and let the sandbox prestage the files!
-        sandbox.prestage();
-        
-        boolean stoppable = "true".equalsIgnoreCase((String) gatContext
-                .getPreferences().get(SSH_STOPPABLE));
-        
-        ArrayList<String> command = brokerHelper.getSshCommand(stoppable);
-        
-        if (!sd.streamingStdinEnabled() && sd.getStdin() == null) {
-            // Redirect stdin from the job to /dev/null.
-            command.add("-n");
-        }
-        
-        String[] args = getArgumentsArray(description);
-        
-        if (brokerHelper.onWindows()) {
-            // TODO: add detection and support for windows ssh servers.
-            command.add("-cmd=" + SshHelper.protectAgainstShellMetas(path));
-        } else {
-            if (sandbox.getSandboxPath() != null) {
-                command.add("cd");
-                command.add(SshHelper.protectAgainstShellMetas(sandbox.getSandboxPath()));
-                command.add("&&");
+        try {
+            // create the job
+            CommandlineSshJob commandlineSshJob = new CommandlineSshJob(gatContext,
+        	    description, sandbox);
+            Job job = null;
+            if (description instanceof WrapperJobDescription) {
+        	WrapperJobCpi tmp = new WrapperJobCpi(gatContext, commandlineSshJob,
+        		listener, metricDefinitionName);
+        	listener = tmp;
+        	job = tmp;
+            } else {
+        	job = commandlineSshJob;
             }
-            command.add(SshHelper.protectAgainstShellMetas(path));
-        }
-        Process p = brokerHelper.startSshCommand(command, args);
-
-        commandlineSshJob.setState(Job.JobState.RUNNING);
-        commandlineSshJob.setSubmissionTime();
-        commandlineSshJob.setStartTime();
-        commandlineSshJob.setProcess(p);
-
-        if (!sd.streamingStderrEnabled()) {
-            // read away the stderr
-
-            try {
-                if (sd.getStderr() != null) {
-                    // to file
-                    new StreamForwarder(p.getErrorStream(), GAT
-                            .createFileOutputStream(sd.getStderr()));
-                } else {
-                    // or throw it away
-                    new StreamForwarder(p.getErrorStream(), null);
-                }
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException(
-                        "Unable to create file output stream for stderr!", e);
+            if (listener != null && metricDefinitionName != null) {
+        	Metric metric = commandlineSshJob.getMetricDefinitionByName(metricDefinitionName)
+        		.createMetric(null);
+        	commandlineSshJob.addMetricListener(listener, metric);
             }
-        }
 
-        if (!sd.streamingStdoutEnabled()) {
-            // read away the stdout
-            try {
-                if (sd.getStdout() != null) {
-                    // to file
-                    new StreamForwarder(p.getInputStream(), GAT
-                            .createFileOutputStream(sd.getStdout()));
-                } else {
-                    // or throw it away
-                    new StreamForwarder(p.getInputStream(), null);
-                }
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException(
-                        "Unable to create file output stream for stdout!", e);
+            // set the state to prestaging
+            commandlineSshJob.setState(Job.JobState.PRE_STAGING);
+            // and let the sandbox prestage the files!
+            sandbox.prestage();
+
+            boolean stoppable = "true".equalsIgnoreCase((String) gatContext
+        	    .getPreferences().get(SSH_STOPPABLE));
+
+            ArrayList<String> command = brokerHelper.getSshCommand(stoppable);
+
+            if (!sd.streamingStdinEnabled() && sd.getStdin() == null) {
+        	// Redirect stdin from the job to /dev/null.
+        	command.add("-n");
             }
-        }
 
-        if (!sd.streamingStdinEnabled() && sd.getStdin() != null) {
-            // forward the stdin from file
-            try {
-                new StreamForwarder(GAT.createFileInputStream(sd.getStdin()), p
-                        .getOutputStream());
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException(
-                        "Unable to create file input stream for stdin!", e);
+            String[] args = getArgumentsArray(description);
+
+            if (brokerHelper.onWindows()) {
+        	// TODO: add detection and support for windows ssh servers.
+        	command.add("-cmd=" + SshHelper.protectAgainstShellMetas(path));
+            } else {
+        	if (sandbox.getSandboxPath() != null) {
+        	    command.add("cd");
+        	    command.add(SshHelper.protectAgainstShellMetas(sandbox.getSandboxPath()));
+        	    command.add("&&");
+        	}
+        	command.add(SshHelper.protectAgainstShellMetas(path));
             }
+            Process p = brokerHelper.startSshCommand(command, args);
+
+            commandlineSshJob.setState(Job.JobState.RUNNING);
+            commandlineSshJob.setSubmissionTime();
+            commandlineSshJob.setStartTime();
+            commandlineSshJob.setProcess(p);
+
+            if (!sd.streamingStderrEnabled()) {
+        	// read away the stderr
+
+        	try {
+        	    if (sd.getStderr() != null) {
+        		// to file
+        		new StreamForwarder(p.getErrorStream(), GAT
+        			.createFileOutputStream(sd.getStderr()));
+        	    } else {
+        		// or throw it away
+        		new StreamForwarder(p.getErrorStream(), null);
+        	    }
+        	} catch (GATObjectCreationException e) {
+        	    throw new GATInvocationException(
+        		    "Unable to create file output stream for stderr!", e);
+        	}
+            }
+
+            if (!sd.streamingStdoutEnabled()) {
+        	// read away the stdout
+        	try {
+        	    if (sd.getStdout() != null) {
+        		// to file
+        		new StreamForwarder(p.getInputStream(), GAT
+        			.createFileOutputStream(sd.getStdout()));
+        	    } else {
+        		// or throw it away
+        		new StreamForwarder(p.getInputStream(), null);
+        	    }
+        	} catch (GATObjectCreationException e) {
+        	    throw new GATInvocationException(
+        		    "Unable to create file output stream for stdout!", e);
+        	}
+            }
+
+            if (!sd.streamingStdinEnabled() && sd.getStdin() != null) {
+        	// forward the stdin from file
+        	try {
+        	    new StreamForwarder(GAT.createFileInputStream(sd.getStdin()), p
+        		    .getOutputStream());
+        	} catch (GATObjectCreationException e) {
+        	    throw new GATInvocationException(
+        		    "Unable to create file input stream for stdin!", e);
+        	}
+            }
+
+            commandlineSshJob.monitorState();
+
+            return job;
+        } catch(GATInvocationException e) {
+            sandbox.removeSandboxDir();
+            throw e;
+        } catch(Throwable e) {
+            sandbox.removeSandboxDir();
+            throw new GATInvocationException("CommandlineSsh: got exception", e);
         }
-
-        commandlineSshJob.monitorState();
-
-        return job;
     }
 }

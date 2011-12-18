@@ -157,6 +157,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    sshPbsJob.setJobID(jobid);
 	    sshPbsJob.startListener();
 	} else {
+	    sandbox.removeSandboxDir();
 	    throw new GATInvocationException("Could not submit sshPbs job");
 	}
 

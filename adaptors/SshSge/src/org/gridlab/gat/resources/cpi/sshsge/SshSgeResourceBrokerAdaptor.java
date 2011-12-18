@@ -145,6 +145,7 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    sshSgeJob.setJobID(jobid);
 	    sshSgeJob.startListener();
 	} else {
+	    sandbox.removeSandboxDir();
 	    throw new GATInvocationException("Could not submit sshSge job");
 	}
 
@@ -159,8 +160,6 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	
 	String Queue = null;
 	long Time = -1;
-	String Filesize = null;
-	Float Memsize = null;
 	Integer Nodes = null;
 	String HwArg = null;
 	java.io.File temp;
@@ -201,12 +200,6 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    }
 
 	    Time = sd.getLongAttribute(SoftwareDescription.WALLTIME_MAX, -1L);
-
-	    Filesize = (String) rd_HashMap.get("file.size");
-
-	    Memsize = (Float) rd_HashMap.get(HardwareResourceDescription.MEMORY_SIZE);
-
-	    String lString = null;
 
 	    Nodes = (Integer) rd_HashMap
 		    .get(HardwareResourceDescription.CPU_COUNT);
