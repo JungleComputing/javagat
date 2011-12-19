@@ -1,9 +1,21 @@
-FIXED BUGS AND ADDITIONS in current version with respect to version 2.1.1
+FIXED BUGS AND ADDITIONS in version 2.1.2 with respect to version 2.1.1
+- getMessage() of GatInvocationException was far too verbose; it included stacktraces.
+  This has been fixed.
+- added various methods to commandlinessh file adaptor (a.o. canRead and canWrite).
+- fixed various issues with the commandlinessh and sshpbs and sshsge adaptors:
+  Ssh commands were constructed at various places, and mostly wrongly (adding
+  ports when not needed, adding user names when not needed). This made 
+  ssh config files that mention user names or port numbers not work. Now,
+  commandlinessh, as well as sshpbs and sshsge work, even over an ssh tunnel.
+- fixed a leak in the wsgt4new and GT42 adaptors (leaked both threads and
+  sockets). Apparently, GramJob.setDelegationEnabled(false) must be called
+  before destroying a job.
+- moved the bin directory to scripts; easier for Eclipse users.
 - added various package-info.java files, replacing package.html.
 - added resource count and process count to JobDescription.toString().
-- added an SSH-PBS and SSH-SGE resource broker adaptor (SshPbs).
-  The PBS version was written by Alexander Beck-Ratzka and extended by
-  Ceriel Jacobs to also support SGE.
+- added an SSH-PBS and an SSH-SGE resource broker adaptor.
+  The PBS version was written by Alexander Beck-Ratzka and was later extended,
+  and used to derive a (similar) sshpsge adaptor.
 - the javadoc entry in api/build.xml referred to a no longer existing URL.
 - added an "end()" method to the SftpTrilead file adaptor to close all
   connections.
