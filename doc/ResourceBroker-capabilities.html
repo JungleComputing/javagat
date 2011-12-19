@@ -68,6 +68,16 @@
 <td>20 % [<a href=#SgeResourceBrokerAdaptor>details</a>]</td>
 </tr>
 <tr>
+<td>SshPbsResourceBrokerAdaptor</td>
+<td>done</td>
+<td>20 % [<a href=#SshPbsResourceBrokerAdaptor>details</a>]</td>
+</tr>
+<tr>
+<td>SshSgeResourceBrokerAdaptor</td>
+<td>done</td>
+<td>20 % [<a href=#SshSgeResourceBrokerAdaptor>details</a>]</td>
+</tr>
+<tr>
 <td>UnicoreResourceBrokerAdaptor</td>
 <td>done</td>
 <td>20 % [<a href=#UnicoreResourceBrokerAdaptor>details</a>]</td>
@@ -375,6 +385,60 @@
 <td>reserveResource</td>
 </tr>
 </table>
+<h2><a name=SshPbsResourceBrokerAdaptor>SshPbsResourceBrokerAdaptor - implementation details</a></h2>
+<p>Adaptor description: not available<table border=1px cellpadding=5 cellspacing=0>
+<tr>
+<th>implemented</th>
+<th>not implemented</th>
+</tr>
+<tr>
+<td>-</td>
+<td>endMultiJob</td>
+</tr>
+<tr>
+<td>-</td>
+<td>findResources</td>
+</tr>
+<tr>
+<td>-</td>
+<td>beginMultiJob</td>
+</tr>
+<tr>
+<td>submitJob</td>
+<td>-</td>
+</tr>
+<tr>
+<td>-</td>
+<td>reserveResource</td>
+</tr>
+</table>
+<h2><a name=SshSgeResourceBrokerAdaptor>SshSgeResourceBrokerAdaptor - implementation details</a></h2>
+<p>Adaptor description: not available<table border=1px cellpadding=5 cellspacing=0>
+<tr>
+<th>implemented</th>
+<th>not implemented</th>
+</tr>
+<tr>
+<td>-</td>
+<td>endMultiJob</td>
+</tr>
+<tr>
+<td>-</td>
+<td>findResources</td>
+</tr>
+<tr>
+<td>-</td>
+<td>beginMultiJob</td>
+</tr>
+<tr>
+<td>submitJob</td>
+<td>-</td>
+</tr>
+<tr>
+<td>-</td>
+<td>reserveResource</td>
+</tr>
+</table>
 <h2><a name=UnicoreResourceBrokerAdaptor>UnicoreResourceBrokerAdaptor - implementation details</a></h2>
 <p>Adaptor description: The Unicore ResourceBroker Adaptor implements the ResourceBroker object on Unicore 6.<table border=1px cellpadding=5 cellspacing=0>
 <tr>
@@ -444,6 +508,8 @@
 <th>Koala</th>
 <th>Local</th>
 <th>SgeRe</th>
+<th>SshPb</th>
+<th>SshSg</th>
 <th>Unico</th>
 <th>Zoril</th>
 </tr>
@@ -455,6 +521,8 @@
 <td><font color=#00FF00><b>V</b></font></td>
 <td><font color=#FF0000><b>X</b></font></td>
 <td><font color=#00FF00><b>V</b></font></td>
+<td><font color=#FF0000><b>X</b></font></td>
+<td><font color=#FF0000><b>X</b></font></td>
 <td><font color=#FF0000><b>X</b></font></td>
 <td><font color=#FF0000><b>X</b></font></td>
 <td><font color=#FF0000><b>X</b></font></td>
@@ -478,6 +546,8 @@
 <td><font color=#FF0000><b>X</b></font></td>
 <td><font color=#FF0000><b>X</b></font></td>
 <td><font color=#FF0000><b>X</b></font></td>
+<td><font color=#FF0000><b>X</b></font></td>
+<td><font color=#FF0000><b>X</b></font></td>
 </tr>
 <tr>
 <td>findResources</td>
@@ -494,9 +564,13 @@
 <td><font color=#FF0000><b>X</b></font></td>
 <td><font color=#FF0000><b>X</b></font></td>
 <td><font color=#FF0000><b>X</b></font></td>
+<td><font color=#FF0000><b>X</b></font></td>
+<td><font color=#FF0000><b>X</b></font></td>
 </tr>
 <tr>
 <td>submitJob</td>
+<td><font color=#00FF00><b>V</b></font></td>
+<td><font color=#00FF00><b>V</b></font></td>
 <td><font color=#00FF00><b>V</b></font></td>
 <td><font color=#00FF00><b>V</b></font></td>
 <td><font color=#00FF00><b>V</b></font></td>
@@ -526,6 +600,8 @@
 <td><font color=#FF0000><b>X</b></font></td>
 <td><font color=#FF0000><b>X</b></font></td>
 <td><font color=#FF0000><b>X</b></font></td>
+<td><font color=#FF0000><b>X</b></font></td>
+<td><font color=#FF0000><b>X</b></font></td>
 </tr>
 <tr>
 <td>total</td>
@@ -536,6 +612,8 @@
 <td>20 %</td>
 <td>60 %</td>
 <td>40 %</td>
+<td>20 %</td>
+<td>20 %</td>
 <td>20 %</td>
 <td>20 %</td>
 <td>20 %</td>

@@ -60,3 +60,13 @@ Long term
   adaptors.
 - feature to disable intelligent dispatching for certain API types (streams)
   and/or let streams save file pointer
+
+BUGS
+----
+- Cygwin! Does not work at all.
+- post-staging hangs when running from Huygens to Lisa?
+  Waiting for a huygens account.
++ commandlinessh adaptor always inserts username in command, but that is not
+  correct: ssh config file may also contain username. Same for ports.
++ Gatexception.getMessage is too verbose: also contains stack traces.
++ add canRead and canWrite to commandlinessh.
