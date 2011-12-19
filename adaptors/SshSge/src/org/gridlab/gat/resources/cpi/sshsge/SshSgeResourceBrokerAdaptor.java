@@ -215,10 +215,15 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    if (Time != -1L) {
 		job.addOption("l", "h_rt=" + (Time*60));
 	    }
+	       
+	    job.addOption("S", "/bin/sh");
 
 	    String nativeFlags = (String) gatContext.getPreferences().get(SSHSGE_NATIVE_FLAGS);
 	    if (nativeFlags != null) {
-		job.addString(nativeFlags);
+		String[] splits = nativeFlags.split("/");
+		for (String s : splits) {
+		    job.addString(s);
+		}
 	    }
 
 	    // Set working dir for SGE.

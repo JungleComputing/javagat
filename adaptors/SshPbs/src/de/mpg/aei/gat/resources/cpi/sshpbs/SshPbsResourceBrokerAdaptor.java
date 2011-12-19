@@ -219,35 +219,39 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	    Memsize = (Float) rd_HashMap.get(HardwareResourceDescription.MEMORY_SIZE);
 
-	    String lString = null;
-
 	    Nodes = (Integer) rd_HashMap
 		    .get(HardwareResourceDescription.CPU_COUNT);
 	    if (Nodes == null) {
 		Nodes = description.getResourceCount();
 	    }
 
-	    lString = "";
 	    if (Time != -1L) {
 		// Reformat time.
 		int minutes = (int) (Time % 60);
-
-		lString += "walltime=" + (Time / 60) + ":" + (minutes / 10) + (minutes % 10) + ":00,";
+		job.addOption("l", "walltime=" + (Time / 60) + ":" + (minutes / 10) + (minutes % 10) + ":00");
 	    }
+	    
 	    if (Filesize != null) {
-		lString += "file=" + Filesize + ",";
+		job.addOption("l", "file=" + Filesize);
 	    }
+	    
 	    if (Memsize != null) {
-		lString += "mem=" + Memsize + ",";
+		job.addOption("l", "mem=" + Memsize);
 	    }
-	    lString += "nodes=" + Nodes;
-
-	    job.addOption("l", lString);
+	    
+	    if (Nodes != 1) {
+		job.addOption("l", "nodes=" + Nodes);
+	    }
 
 	    String nativeFlags = (String) gatContext.getPreferences().get(SSHPBS_NATIVE_FLAGS);
 	    if (nativeFlags != null) {
-		job.addString(nativeFlags);
+		String[] splits = nativeFlags.split("/");
+		for (String s : splits) {
+		    job.addString(s);
+		}
 	    }
+	    
+	    job.addOption("S", "/bin/sh");
 
 	    // Name for the job.
 	    HwArg = (String) rd_HashMap.get("Jobname");
