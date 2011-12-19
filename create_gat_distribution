@@ -18,7 +18,7 @@ cp -R engine JavaGAT-$1
 cp -R adaptors JavaGAT-$1
 cp -R tests JavaGAT-$1
 cp -R doc JavaGAT-$1
-cp -R bin JavaGAT-$1
+cp -R scripts JavaGAT-$1
 cp *.txt JavaGAT-$1
 rm -f JavaGAT-$1/TODO.txt
 cp *.xml JavaGAT-$1
