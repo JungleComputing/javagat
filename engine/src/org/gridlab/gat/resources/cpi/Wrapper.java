@@ -110,6 +110,29 @@ public class Wrapper {
             GAT.end();
         }
     }
+    
+    private String replaceEnv(String arg) {
+	int start = 0;
+	for (;;) {
+	    int index = arg.indexOf("${", start);
+	    if (index < 0) {
+		return arg;
+	    }
+	    int endIndex = arg.indexOf("}", index+2);
+	    if (endIndex < 0) {
+		return arg;
+	    }
+	    String target = arg.substring(index, endIndex+1);
+	    String env = arg.substring(2, target.length()-1);
+	    String replacement = System.getenv(env);
+	    if (replacement != null) {
+		arg = arg.replaceFirst(target, replacement);
+		start = index + replacement.length();
+	    } else {
+		start = index+2;
+	    }
+	}
+    }
 
     @SuppressWarnings("unchecked")
     public void start(String[] args) throws Exception {
@@ -124,9 +147,9 @@ public class Wrapper {
         this.initiator = (URI) in.readObject();
         int level = in.readInt();
         wrapperId = in.readInt();
-        wrapperCommonSrc = (String) in.readObject();
-        wrapperCommonDest = (String) in.readObject();
-        wrapperCommonTrigger = (String) in.readObject();
+        wrapperCommonSrc = replaceEnv((String) in.readObject());
+        wrapperCommonDest = replaceEnv((String) in.readObject());
+        wrapperCommonTrigger = replaceEnv((String) in.readObject());
         triggerDirectory = (URI) in.readObject();      
         scheduledType = (ScheduledType) in.readObject();       
         List<WrappedJobInfo> infos = (List<WrappedJobInfo>) in.readObject();
@@ -322,6 +345,16 @@ public class Wrapper {
                                 rewriteURI(stdin.toGATURI(), origin)), in);
             } catch (Throwable e) {
                 logger.error("Got Exception", e);
+            }
+        }
+        Map<String, Object> attributes = jobDescription.getSoftwareDescription().getAttributes();
+        for (Map.Entry<String, Object> e : attributes.entrySet()) {
+            if (e.getValue() instanceof String) {
+        	String s = replaceEnv((String) e.getValue());
+        	if (logger.isDebugEnabled()) {
+        	    logger.debug("Replacing " + e.getValue() + " with " + s);
+        	}
+        	e.setValue(s);
             }
         }
         return description;
