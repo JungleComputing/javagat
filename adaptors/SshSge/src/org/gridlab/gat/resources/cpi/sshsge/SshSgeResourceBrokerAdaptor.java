@@ -115,7 +115,7 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    description.getSoftwareDescription().addPostStagedFile(GAT.createFile(gatContext, new URI(returnValueFile)));
 	    description.getSoftwareDescription().addPreStagedFile(GAT.createFile(gatContext, new URI(qsubFileName)));
 	} catch (Throwable e) {
-	    // TODO!
+	    throw new GATInvocationException("Error in file staging", e);
 	}
 	
 	Sandbox sandbox = new Sandbox(gatContext, description, authority, null,
