@@ -352,7 +352,9 @@ public class Wrapper {
             if (e.getValue() instanceof String) {
         	String s = replaceEnv((String) e.getValue());
         	if (logger.isDebugEnabled()) {
-        	    logger.debug("Replacing " + e.getValue() + " with " + s);
+        	    if (s != e.getValue()) {
+        		logger.debug("Replacing " + e.getValue() + " with " + s);
+        	    }
         	}
         	e.setValue(s);
             }
