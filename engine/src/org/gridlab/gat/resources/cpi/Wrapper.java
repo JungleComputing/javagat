@@ -126,7 +126,7 @@ public class Wrapper {
 	    String env = arg.substring(2, target.length()-1);
 	    String replacement = System.getenv(env);
 	    if (replacement != null) {
-		arg = arg.replaceFirst(target, replacement);
+		arg = arg.replace(target, replacement);
 		start = index + replacement.length();
 	    } else {
 		start = index+2;
