@@ -24,6 +24,7 @@ import org.globus.exec.client.GramJob;
 import org.globus.exec.utils.ManagedJobConstants;
 import org.globus.exec.utils.ManagedJobFactoryConstants;
 import org.globus.exec.utils.rsl.RSLParseException;
+import org.globus.wsrf.NoSuchResourceException;
 import org.globus.wsrf.WSRFConstants;
 import org.globus.wsrf.encoding.SerializationException;
 import org.globus.wsrf.impl.SimpleResourceKey;
@@ -574,7 +575,18 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		wsgt4job.setSubmissionID(handle);
 
 		// wsgt4 job object listens to the gram job
-		gramjob.addListener(wsgt4job);
+//		gramjob.addListener(wsgt4job);
+		// @author Bastian Boegel: removed listener because after job submit
+		// the port will never be closed, even if the job is finished. This
+		// will cause a problem with the number of open ports, hence I removed
+		// the listener and call unbind() that this will not happen.
+		try {
+			gramjob.unbind();
+		} catch (NoSuchResourceException e) {
+			logger.error("unbind of listener failed", e);
+		} catch (Exception e) {
+			logger.error("unbind of listener failed", e);
+		}
 
 		return job;
 	}
