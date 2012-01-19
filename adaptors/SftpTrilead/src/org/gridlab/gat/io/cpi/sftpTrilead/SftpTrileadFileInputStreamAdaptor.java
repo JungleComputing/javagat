@@ -151,19 +151,21 @@ public class SftpTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
      * @see java.io.InputStream#close()
      */
     public void close() throws GATInvocationException {
-        closed = true;
-        try {
-            connection.sftpClient.closeFile(handle);
-        } catch (Throwable e1) {
-            logger.debug("sftpClient.closeFile: ", e1);
-            // ignored
-        }
-        try {
-            SftpTrileadFileAdaptor.closeConnection(connection, gatContext.getPreferences());
-        } catch (Throwable e) {
-            logger.debug("SftpTrileadFileAdaptor.closeConnection: ", e);
-            // ignored
-        }
+	if (! closed) {
+	    closed = true;
+	    try {
+		connection.sftpClient.closeFile(handle);
+	    } catch (Throwable e1) {
+		logger.debug("sftpClient.closeFile: ", e1);
+		// ignored
+	    }
+	    try {
+		SftpTrileadFileAdaptor.closeConnection(connection, gatContext.getPreferences());
+	    } catch (Throwable e) {
+		logger.debug("SftpTrileadFileAdaptor.closeConnection: ", e);
+		// ignored
+	    }
+	}
     }
     
     /*
