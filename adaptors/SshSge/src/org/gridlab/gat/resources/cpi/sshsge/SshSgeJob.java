@@ -18,8 +18,12 @@ import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.SerializedSimpleJobBase;
 import org.gridlab.gat.resources.cpi.SimpleJobBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SshSgeJob extends SimpleJobBase {
+    
+    protected static Logger logger = LoggerFactory.getLogger(SshSgeJob.class);
 
     private static String regexString = "\\s\\s*";
 

@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import java.lang.StringBuffer;
 
@@ -94,13 +95,14 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	}
 
 	JobDescription description = (JobDescription) abstractDescription;
+	SoftwareDescription sd = description.getSoftwareDescription();
 	
 	int nproc = description.getProcessCount();
 	
-	if (nproc != 1) {
-	    throw new GATInvocationException("SshSge adaptor cannot start multiple processes.");
+	if (sd.streamingStderrEnabled() || sd.streamingStdinEnabled() || sd.streamingStdoutEnabled()) {
+	    throw new GATInvocationException("Streaming I/O not supported by SshSge adaptor");
 	}
-
+	
 	String authority = getAuthority();
 	if (authority == null) {
 	    authority = "localhost";
@@ -109,11 +111,20 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	// Create filename for return value.
 	String returnValueFile = ".rc." + Math.random();
 	
-	String qsubFileName = createQsubScript(description, returnValueFile);
+	java.io.File jobScriptFile = createJobScript(description);
+	java.io.File jobStarterFile = null;
+	if (nproc > 1) {
+	    jobStarterFile = createJobStarter(description, nproc, jobScriptFile);
+	}
+	java.io.File qsubFile = createQsubScript(description, returnValueFile, jobStarterFile, jobScriptFile, nproc);
 	
 	try {
-	    description.getSoftwareDescription().addPostStagedFile(GAT.createFile(gatContext, new URI(returnValueFile)));
-	    description.getSoftwareDescription().addPreStagedFile(GAT.createFile(gatContext, new URI(qsubFileName)));
+	    sd.addPostStagedFile(GAT.createFile(gatContext, new URI(returnValueFile)));
+	    sd.addPreStagedFile(GAT.createFile(gatContext, new URI(qsubFile.getAbsolutePath())));
+	    sd.addPreStagedFile(GAT.createFile(gatContext, new URI(jobScriptFile.getAbsolutePath())));
+	    if (jobStarterFile != null) {
+		sd.addPreStagedFile(GAT.createFile(gatContext, new URI(jobStarterFile.getAbsolutePath())));
+	    }
 	} catch (Throwable e) {
 	    throw new GATInvocationException("Error in file staging", e);
 	}
@@ -138,10 +149,8 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 		    .createMetric(null);
 	    sshSgeJob.addMetricListener(listener, metric);
 	}
-	
-	java.io.File jobFile = new java.io.File(qsubFileName);
 
-	String jobid = sshSgeSubmission(sshSgeJob, description, jobFile, sandbox);
+	String jobid = sshSgeSubmission(sshSgeJob, description, qsubFile, sandbox, jobStarterFile, jobScriptFile);
 
 	if (jobid != null) {
 	    sshSgeJob.setState(Job.JobState.SCHEDULED);
@@ -156,12 +165,13 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	return job;
     }
 
-    String createQsubScript(JobDescription description, String returnValueFile)
+    java.io.File createQsubScript(JobDescription description, String returnValueFile, java.io.File jobStarterFile, java.io.File jobScriptFile,
+	    int nproc)
 	    throws GATInvocationException {
 
 	String Queue = null;
 	long Time = -1;
-	Integer Nodes = null;
+	Integer cpus = null;
 	String HwArg = null;
 	java.io.File temp;
 	SgeScriptWriter job = null;
@@ -187,11 +197,11 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	try {
 	    job = new SgeScriptWriter(
 		    new BufferedWriter(new FileWriter(temp)));
-	    String jobName = (String) gatContext.getPreferences().get(SSHSGE_SCRIPT);
-	    if (jobName != null) {
+	    String userScript = (String) gatContext.getPreferences().get(SSHSGE_SCRIPT);
+	    if (userScript != null) {
 		// a specified job script overrides everything, except for pre-staging, post-staging,
 		// and exit status.
-		BufferedReader f = new BufferedReader(new FileReader(jobName));
+		BufferedReader f = new BufferedReader(new FileReader(userScript));
 		for (;;) {
 		    String s = f.readLine();
 		    if (s == null) {
@@ -215,15 +225,15 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		Time = sd.getLongAttribute(SoftwareDescription.WALLTIME_MAX, -1L);
 
-		Nodes = (Integer) rd_HashMap
+		cpus = (Integer) rd_HashMap
 			.get(HardwareResourceDescription.CPU_COUNT);
-		if (Nodes == null) {
-		    Nodes = description.getResourceCount();
+		if (cpus == null) {
+		    cpus = description.getResourceCount();
 		}
 
-		if (Nodes > 1) {
+		if (cpus > 1 || nproc > 1) {
 		    String jobType = getStringAttribute(description, SoftwareDescription.JOB_TYPE, "prun");
-		    job.addOption("pe", jobType + " " + Nodes);
+		    job.addOption("pe", jobType + " " + cpus);
 		}
 
 		if (Time != -1L) {
@@ -269,40 +279,35 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		// Files for stdout and stderr.
 		if (sd.getStdout() != null) {
-		    job.addOption("o", sd.getStdout().getName().toString());
+		    job.addOption("o", sd.getStdout().getName());
 		}
 
 		if (sd.getStderr() != null) {
-		    job.addOption("e", sd.getStderr().getName().toString());
+		    job.addOption("e", sd.getStderr().getName());
 		}
-
-		// Support environment.
-		Map<String, Object> env = sd.getEnvironment();
-		if (env != null) {
-		    Set<String> s = env.keySet();
-		    Object[] keys = s.toArray();
-
-		    for (int i = 0; i < keys.length; i++) {
-			String val = (String) env.get(keys[i]);
-			job.println(keys[i] + "=" + val + " && export " + keys[i]);
-		    }
+		
+		if (sd.getStdin() != null) {
+		    job.addOption("i", sd.getStdin().getName());
 		}
-
-		// Construct command.
-		StringBuffer cmd = new StringBuffer();
-
-		cmd.append(SshHelper.protectAgainstShellMetas(sd.getExecutable().toString()));
-		if (sd.getArguments() != null) {
-		    String[] args = sd.getArguments();
-		    for (int i = 0; i < args.length; ++i) {
-			cmd.append(" ");
-			cmd.append(SshHelper.protectAgainstShellMetas(args[i]));
-		    }
+		
+		job.println("trap 'echo retvalue = 1 > " + returnValueFile + " && exit 1' 1 2 3 15");
+		if (jobStarterFile != null) {
+		    job.println("/bin/sh " + jobStarterFile.getName() + " < /dev/null > /dev/null 2>&1 &");
 		}
-		job.println(cmd.toString());
+		job.println("/bin/sh " + jobScriptFile.getName());
 	    }
 
-	    job.println("echo \"retvalue = $?\" > " + returnValueFile);
+	    job.println("echo retvalue = $? > " + returnValueFile);
+	    if (userScript == null && jobStarterFile != null) {
+		job.println("for job in .gat_script.* ; do");
+		job.println("  jobno=`expr $job : '.gat_script.\\(.*\\)'`");
+		job.println("  while [ ! -e .gat_done.$jobno ] ; do");
+		job.println("    sleep 2");
+		job.println("  done");
+		job.println("  cat .out.$jobno 2>/dev/null");
+		job.println("  cat .err.$jobno 1>&2");
+		job.println("done");
+	    }
 	} catch (Throwable e) {
 	    throw new GATInvocationException(
 		    "Cannot create temporary qsub file"
@@ -311,11 +316,131 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    if (job != null)
 		job.close();
 	}
-	return (temp.getAbsolutePath().toString());
+	return temp;
+    }
+    
+
+    java.io.File createJobStarter(JobDescription description, int nproc, java.io.File jobScript)
+	    throws GATInvocationException {
+
+	java.io.File temp;
+	
+	SoftwareDescription sd = description.getSoftwareDescription();
+	ResourceDescription rd = description.getResourceDescription();
+
+	try {
+	    temp = java.io.File.createTempFile("sge", null);
+	} catch (IOException e) {
+	    throw new GATInvocationException("Cannot create file", e);
+	}
+	PrintWriter job = null;
+	try {
+	    job = new PrintWriter(new BufferedWriter(new FileWriter(temp)));
+	    
+	    job.println("#!/bin/sh");
+	    job.println("# Job starter script.");
+	    job.println("# The jobs are distributed over the available nodes in round-robin fashion.");
+	    job.println("GAT_MYDIR=`pwd`");
+	    job.println("case X$PE_HOSTFILE in");
+	    job.println("X)  GAT_HOSTS=$HOSTNAME");
+	    job.println("    ;;");
+	    job.println("*)  GAT_HOSTS=`cat $PE_HOSTFILE | sed 's/ .*//'`");
+	    job.println("    ;;");
+	    job.println("esac");
+	    job.println("GAT_JOBNO=1");
+	    job.println("GAT_JOBS=" + nproc);
+	    job.println("set $GAT_HOSTS");
+	    job.println("shift");
+	    job.println("while :");
+	    job.println("do");
+	    job.println("  for GAT_HOST in \"$@\"");
+	    job.println("  do");
+	    job.println("    echo #!/bin/sh > .gat_script.$GAT_JOBNO");
+	    job.println("    echo cd $GAT_MYDIR >> .gat_script.$GAT_JOBNO");
+	    job.println("    echo trap \\\"touch .gat_done.$GAT_JOBNO\\\" 0 1 2 3 15 >> .gat_script.$GAT_JOBNO");
+	    job.println("    cat " + jobScript.getName() + " >> .gat_script.$GAT_JOBNO");
+	    job.println("    chmod +x .gat_script.$GAT_JOBNO");
+	    job.print(  "    ssh $GAT_HOST \"$GAT_MYDIR/.gat_script.$GAT_JOBNO");
+	    if (sd.getStdin() != null) {
+		job.print(" < $GAT_MYDIR/" + sd.getStdin().getName());
+	    } else {
+		job.print(" < /dev/null");
+	    }
+	    job.println(" > $GAT_MYDIR/.out.$GAT_JOBNO 2>$GAT_MYDIR/.err.$GAT_JOBNO &\"");
+	    job.println("    GAT_JOBNO=`expr $GAT_JOBNO + 1`");
+	    job.println("    if expr $GAT_JOBNO \\>= $GAT_JOBS > /dev/null ; then break 2 ; fi");
+	    job.println("  done");
+	    job.println("  set $GAT_HOSTS");
+	    job.println("done");
+	} catch (Throwable e) {
+	    throw new GATInvocationException(
+		    "Cannot create temporary job starter file"
+			    + temp.getAbsolutePath());
+	} finally {
+	    if (job != null)
+		job.close();
+	}
+	return temp;
     }
 
+    java.io.File createJobScript(JobDescription description)
+	    throws GATInvocationException {
+
+	java.io.File temp;
+	
+	SoftwareDescription sd = description.getSoftwareDescription();
+	ResourceDescription rd = description.getResourceDescription();
+
+	try {
+	    temp = java.io.File.createTempFile("sge", null);
+	} catch (IOException e) {
+	    throw new GATInvocationException("Cannot create file", e);
+	}
+	PrintWriter job = null;
+	try {
+	    job = new PrintWriter(new BufferedWriter(new FileWriter(temp)));
+	    
+	    job.println("#!/bin/sh");
+	    job.println("# job script");
+	    // Support environment.
+	    Map<String, Object> env = sd.getEnvironment();
+	    if (env != null) {
+		Set<String> s = env.keySet();
+		Object[] keys = s.toArray();
+
+		for (int i = 0; i < keys.length; i++) {
+		    String val = (String) env.get(keys[i]);
+		    job.println(keys[i] + "=" + val + " && export " + keys[i]);
+		}
+	    }
+
+	    // Construct command.
+	    StringBuffer cmd = new StringBuffer();
+
+	    cmd.append(SshHelper.protectAgainstShellMetas(sd.getExecutable().toString()));
+	    if (sd.getArguments() != null) {
+		String[] args = sd.getArguments();
+		for (int i = 0; i < args.length; ++i) {
+		    cmd.append(" ");
+		    cmd.append(SshHelper.protectAgainstShellMetas(args[i]));
+		}
+	    }
+	    job.println(cmd.toString());
+	    job.println("exit $?");
+	} catch (Throwable e) {
+	    throw new GATInvocationException(
+		    "Cannot create temporary job script file"
+			    + temp.getAbsolutePath());
+	} finally {
+	    if (job != null)
+		job.close();
+	}
+	return temp;
+    }
+
+
     private String sshSgeSubmission(SshSgeJob SgeJob, JobDescription description,
-	    java.io.File qsubFile, Sandbox sandbox) throws GATInvocationException {
+	    java.io.File qsubFile, Sandbox sandbox, java.io.File starter, java.io.File script) throws GATInvocationException {
 
 	String host = getHostname();
 	if (host == null) {
@@ -348,6 +473,10 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    throw new GATInvocationException("Got IOException", e);
 	} finally {
 	    qsubFile.delete();
+	    script.delete();
+	    if (starter != null) {
+		starter.delete();
+	    }
 	}
     }
 }
