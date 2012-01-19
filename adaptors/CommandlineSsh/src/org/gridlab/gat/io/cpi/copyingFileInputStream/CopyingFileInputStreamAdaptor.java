@@ -114,8 +114,10 @@ public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
         } catch (IOException e) {
             // ignore
         }
-
-        localFile.delete();
+        if (localFile != null) {
+            // If null, already closed.
+            localFile.delete();
+        }
         localFile = null;
         in = null;
     }
