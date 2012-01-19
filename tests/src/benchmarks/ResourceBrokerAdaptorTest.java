@@ -129,6 +129,11 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/echo");
         sd.setArguments("test", "1", "2", "3");
+        try {
+            sd.setStdout(GAT.createFile(gatContext, preferences, "parallel-stdout"));
+        } catch (GATObjectCreationException e) {
+            return new AdaptorTestResultEntry(false, 0L, e);
+        }
         JobDescription jd = new JobDescription(sd);
         jd.setProcessCount(2);
         jd.setResourceCount(1);
