@@ -109,11 +109,13 @@ public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
     }
 
     public void close() throws GATInvocationException {
-        try {
-            in.close();
-        } catch (IOException e) {
-            // ignore
-        }
+	if (in != null) {
+	    try {
+		in.close();
+	    } catch (IOException e) {
+		// ignore
+	    }
+	}
         if (localFile != null) {
             // If null, already closed.
             localFile.delete();
