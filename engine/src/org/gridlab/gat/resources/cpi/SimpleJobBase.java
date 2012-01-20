@@ -357,7 +357,7 @@ public abstract class SimpleJobBase extends JobCpi {
 	    if (stoptime == 0L) {
 		stoptime = System.currentTimeMillis();
 	    }
-	    logger.debug("SshPbs Job " + jobID + " stopped by user");
+	    logger.debug("Job " + jobID + " stopped by user");
 	}
     }
 
