@@ -299,6 +299,7 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	    job.println("echo retvalue = $? > " + returnValueFile);
 	    if (userScript == null && jobStarterFile != null) {
+	        job.println("while [ ! -e .gat_script." + (nproc-1) + " ] ; do sleep 1 ; done");
 		job.println("for job in .gat_script.* ; do");
 		job.println("  jobno=`expr $job : '.gat_script.\\(.*\\)'`");
 		job.println("  while [ ! -e .gat_done.$jobno ] ; do");
@@ -310,8 +311,8 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    }
 	} catch (Throwable e) {
 	    throw new GATInvocationException(
-		    "Cannot create temporary qsub file"
-			    + temp.getAbsolutePath());
+		    "Cannot create temporary qsub file "
+			    + temp.getAbsolutePath(), e);
 	} finally {
 	    if (job != null)
 		job.close();
@@ -326,7 +327,6 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	java.io.File temp;
 	
 	SoftwareDescription sd = description.getSoftwareDescription();
-	ResourceDescription rd = description.getResourceDescription();
 
 	try {
 	    temp = java.io.File.createTempFile("sge", null);
@@ -374,8 +374,8 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    job.println("done");
 	} catch (Throwable e) {
 	    throw new GATInvocationException(
-		    "Cannot create temporary job starter file"
-			    + temp.getAbsolutePath());
+		    "Cannot create temporary job starter file "
+			    + temp.getAbsolutePath(), e);
 	} finally {
 	    if (job != null)
 		job.close();
@@ -389,7 +389,6 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	java.io.File temp;
 	
 	SoftwareDescription sd = description.getSoftwareDescription();
-	ResourceDescription rd = description.getResourceDescription();
 
 	try {
 	    temp = java.io.File.createTempFile("sge", null);
@@ -429,8 +428,8 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    job.println("exit $?");
 	} catch (Throwable e) {
 	    throw new GATInvocationException(
-		    "Cannot create temporary job script file"
-			    + temp.getAbsolutePath());
+		    "Cannot create temporary job script file "
+			    + temp.getAbsolutePath(), e);
 	} finally {
 	    if (job != null)
 		job.close();
