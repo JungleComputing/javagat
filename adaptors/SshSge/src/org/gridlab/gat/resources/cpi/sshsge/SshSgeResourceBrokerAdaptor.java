@@ -446,8 +446,9 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    host = "localhost";
 	}
 
-	try {	    
+	try {
 	    sandbox.prestage();
+	    
 	    // Create the ssh command for qsub...
 	    ArrayList<String> command = sshHelper.getSshCommand(false);
 	    if (sandbox.getSandboxPath() != null) {
@@ -475,6 +476,11 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    script.delete();
 	    if (starter != null) {
 		starter.delete();
+	    }
+	    try {
+	        sandbox.removeSandboxDir();
+	    } catch(Throwable e) {
+	        // ignore
 	    }
 	}
     }

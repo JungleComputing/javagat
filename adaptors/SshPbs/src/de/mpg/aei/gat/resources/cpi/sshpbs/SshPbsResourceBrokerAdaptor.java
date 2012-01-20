@@ -499,6 +499,11 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
             if (starter != null) {
                 starter.delete();
             }
+            try {
+                sandbox.removeSandboxDir();
+            } catch(Throwable e) {
+                // ignore
+            }
 	}
     }
 }
