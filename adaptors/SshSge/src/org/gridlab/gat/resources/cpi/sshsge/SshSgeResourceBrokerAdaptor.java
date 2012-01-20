@@ -232,7 +232,7 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 
 		if (cpus > 1 || nproc > 1) {
-		    String jobType = getStringAttribute(description, SoftwareDescription.JOB_TYPE, "prun");
+		    String jobType = getStringAttribute(description, SoftwareDescription.JOB_TYPE, "javagat");
 		    job.addOption("pe", jobType + " " + cpus);
 		}
 
