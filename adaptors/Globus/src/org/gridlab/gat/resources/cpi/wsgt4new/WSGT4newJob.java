@@ -1,5 +1,7 @@
 package org.gridlab.gat.resources.cpi.wsgt4new;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -278,8 +280,8 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 			return;
 		}
 
+		logger.debug("Globus job state changed from " + jobState + " to " + newState + " (id: " + submissionID + ")");
 		jobState = newState;
-
 		boolean holding = job.isHolding();
 		if (jobState.equals(StateEnumeration.Done) || jobState.equals(StateEnumeration.Failed)) {
 			this.exitStatus = job.getExitCode();
@@ -414,7 +416,15 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 			}
 		} catch (Exception e) {
 			logger.error("Cannot refresh status for job!", e);
-			throw new RuntimeException(e);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			PrintStream ps = new PrintStream(baos);
+			e.printStackTrace(ps);
+			String content = baos.toString();
+			if ((content != null) && content.contains("org.globus.wsrf.NoSuchResourceException")) {
+				throw new RuntimeException("Got org.globus.wsrf.NoSuchResourceException. This probably means, that Globus doen't know the job (any more).", e);
+			} else {
+				throw new RuntimeException("Job refresh failed", e);
+			}
 		}
 		return this.state;
 	}
