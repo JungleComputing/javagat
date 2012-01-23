@@ -171,9 +171,10 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         	// TODO: add detection and support for windows ssh servers.
         	command.add("-cmd=" + SshHelper.protectAgainstShellMetas(path));
             } else {
-        	if (sandbox.getSandboxPath() != null) {
+                String dir = sd.getStringAttribute(SoftwareDescription.DIRECTORY, sandbox.getSandboxPath());
+                if (dir != null) {
         	    command.add("cd");
-        	    command.add(SshHelper.protectAgainstShellMetas(sandbox.getSandboxPath()));
+        	    command.add(SshHelper.protectAgainstShellMetas(dir));
         	    command.add("&&");
         	}
         	command.add(SshHelper.protectAgainstShellMetas(path));

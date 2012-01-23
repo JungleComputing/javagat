@@ -222,8 +222,10 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         // construct the ssh command
         // 1. cd to the execution dir
         String command = "";
-        if (sandbox.getSandboxPath() != null) {
-            command += "cd " + sandbox.getSandboxPath() + (isWindows ? " & " : " && ");
+        
+        String dir = sd.getStringAttribute(SoftwareDescription.DIRECTORY, sandbox.getSandboxPath());
+        if (dir != null) {
+            command += "cd " + protectAgainstShellMetas(dir) + (isWindows ? " & " : " && ");
         }
         // 2. set necessary env variables using export
         Map<String, Object> env = sd.getEnvironment();
@@ -240,9 +242,9 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
                     // command += "export " + keys[i] + "=" + val + " && ";
                     // Fix: made to work for regular Bourne shell as well --Ceriel
                     if (isCsh) {
-                        command += "set " + keys[i] + "=" + val + " && ";
+                        command += "set " + keys[i] + "=" + protectAgainstShellMetas(val) + " && ";
                     } else {
-                        command += keys[i] + "=" + val + " && export " + keys[i] + " && ";
+                        command += keys[i] + "=" + protectAgainstShellMetas(val) + " && export " + keys[i] + " && ";
                     }
                 }
             }
