@@ -414,6 +414,13 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
             
             job.println("#!/bin/sh");
             job.println("# job script");
+            
+            // Support DIRECTORY
+            String dir = sd.getStringAttribute(SoftwareDescription.DIRECTORY, null);
+            if (dir != null) {
+                job.println("cd " + SshHelper.protectAgainstShellMetas(dir));
+            }
+
             // Support environment.
             Map<String, Object> env = sd.getEnvironment();
             if (env != null) {
@@ -422,7 +429,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
  
                 for (int i = 0; i < keys.length; i++) {
                     String val = (String) env.get(keys[i]);
-                    job.println(keys[i] + "=" + val + " && export " + keys[i]);
+                    job.println(keys[i] + "=" + SshHelper.protectAgainstShellMetas(val) + " && export " + keys[i]);
                 }
             }
                              
