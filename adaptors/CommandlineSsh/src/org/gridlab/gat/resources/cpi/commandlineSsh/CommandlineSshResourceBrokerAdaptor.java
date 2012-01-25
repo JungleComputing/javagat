@@ -192,8 +192,9 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         	try {
         	    if (sd.getStderr() != null) {
         		// to file
-        		new StreamForwarder(p.getErrorStream(), GAT
+        		StreamForwarder f = new StreamForwarder(p.getErrorStream(), GAT
         			.createFileOutputStream(sd.getStderr()));
+        		commandlineSshJob.setErrorStream(f);
         	    } else {
         		// or throw it away
         		new StreamForwarder(p.getErrorStream(), null);
@@ -209,8 +210,9 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         	try {
         	    if (sd.getStdout() != null) {
         		// to file
-        		new StreamForwarder(p.getInputStream(), GAT
+        		StreamForwarder f = new StreamForwarder(p.getInputStream(), GAT
         			.createFileOutputStream(sd.getStdout()));
+        		commandlineSshJob.setOutputStream(f);
         	    } else {
         		// or throw it away
         		new StreamForwarder(p.getInputStream(), null);

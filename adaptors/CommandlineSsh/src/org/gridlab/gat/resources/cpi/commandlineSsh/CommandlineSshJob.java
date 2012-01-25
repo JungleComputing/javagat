@@ -16,6 +16,7 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -43,6 +44,10 @@ public class CommandlineSshJob extends JobCpi {
     MetricDefinition statusMetricDefinition;
 
     Metric statusMetric;
+
+    private StreamForwarder outputStreamFile;
+
+    private StreamForwarder errorStreamFile;
 
     CommandlineSshJob(GATContext gatContext, JobDescription description,
             Sandbox sandbox) {
@@ -173,6 +178,14 @@ public class CommandlineSshJob extends JobCpi {
                 && gatContext.getPreferences().get("job.stop.poststage")
                 .equals("false"), true);
     }
+    
+    void setErrorStream(StreamForwarder err) {
+        errorStreamFile = err;
+    }
+        
+    void setOutputStream(StreamForwarder out) {
+        outputStreamFile = out;
+    }
 
     private synchronized void stop(boolean skipPostStage, boolean kill)
     throws GATInvocationException {
@@ -185,7 +198,24 @@ public class CommandlineSshJob extends JobCpi {
         if (p != null && kill) {
             p.destroy();
         }
-        
+
+        if (outputStreamFile != null) {
+            outputStreamFile.waitUntilFinished();
+            try {
+                outputStreamFile.close();
+            } catch(Throwable e) {
+                // ignored
+            }
+        }
+        if (errorStreamFile != null) {
+            errorStreamFile.waitUntilFinished();
+            try {
+                errorStreamFile.close();
+            } catch(Throwable e) {
+                // ignored
+            }
+        }
+
         if (!skipPostStage) {
             setState(JobState.POST_STAGING);
             sandbox.retrieveAndCleanup(this);
