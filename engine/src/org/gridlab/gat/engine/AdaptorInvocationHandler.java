@@ -76,7 +76,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
             } catch (Throwable t) {
                 e.add(adaptor.adaptorName, t);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Instantiation of " + adaptor.adaptorName + " failed", e);
+                    logger.debug("Instantiation of " + adaptor.adaptorName + " failed", t);
                 }
             }
         }
