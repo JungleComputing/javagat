@@ -4,16 +4,21 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
-import org.gridlab.gat.engine.util.CommandRunner;
-import org.gridlab.gat.engine.util.SshHelper;
+import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.SerializedSimpleJobBase;
@@ -21,19 +26,19 @@ import org.gridlab.gat.resources.cpi.SimpleJobBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SshSgeJob extends SimpleJobBase {
+public class SshSgeJob extends SimpleJobBase implements MetricListener {
     
     protected static Logger logger = LoggerFactory.getLogger(SshSgeJob.class);
 
     private static String regexString = "\\s\\s*";
 
     private static final long serialVersionUID = 1L;
-    
-    private final SshHelper jobHelper;
 
+    private final ResourceBroker jobHelper;
+    
     protected SshSgeJob(GATContext gatContext,
 	    URI brokerURI, JobDescription jobDescription,
-	    Sandbox sandbox, SshHelper jobHelper, String returnValueFile) {
+	    Sandbox sandbox, ResourceBroker jobHelper, String returnValueFile) {
 	super(gatContext, brokerURI, jobDescription, sandbox, returnValueFile);
 	this.jobHelper = jobHelper;
     }
@@ -45,9 +50,11 @@ public class SshSgeJob extends SimpleJobBase {
     public SshSgeJob(GATContext gatContext, SerializedSimpleJobBase sj)
 	    throws GATObjectCreationException {
 	super(gatContext, sj);
-	jobHelper = new SshHelper(gatContext, brokerURI, "sshsge",
-		SshSgeResourceBrokerAdaptor.SSH_PORT_STRING,
-		SshSgeResourceBrokerAdaptor.SSH_STRICT_HOST_KEY_CHECKING);
+	try {
+	    jobHelper = SshSgeResourceBrokerAdaptor.subResourceBroker(gatContext, brokerURI);
+	} catch (URISyntaxException e) {
+	    throw new GATObjectCreationException("Could not create broker to get SGE job status", e);
+	}
 	startListener();
     }
 
@@ -73,40 +80,88 @@ public class SshSgeJob extends SimpleJobBase {
 	super.startListener();
     }
 
-    protected synchronized void getJobState(String jobID) throws GATInvocationException {
-	
-        if (state == JobState.POST_STAGING || state == JobState.STOPPED
-                || state == JobState.SUBMISSION_ERROR) {
-            return;
+    boolean jobStateBusy = false;
+    protected void getJobState(String jobID) throws GATInvocationException {
+        synchronized(this) {
+            while (jobStateBusy) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    // ignored
+                }
+            }
+            jobStateBusy = true;
         }
-
-	logger.debug("Getting task status in setState()");
-
-	//  getting the status via ssh ... qstat
 	
-	List<String> command = jobHelper.getSshCommand(false);
-	command.add("qstat");
-	command.add("-u");
-	command.add("$USER");
-        CommandRunner cmd = jobHelper.runSshCommand(command);
-        if (cmd.getExitCode() != 0) {
-            throw new GATInvocationException("qstat gives exitcode " +  cmd.getExitCode());
+        try {
+            if (state == JobState.POST_STAGING || state == JobState.STOPPED
+                    || state == JobState.SUBMISSION_ERROR) {
+                return;
+            }
+
+            logger.debug("Getting task status in setState()");
+
+            //  getting the status via ssh ... qstat
+            java.io.File qstatResultFile = null;
+            ArrayList<String> result = new ArrayList<String>();
+            try {
+                // Create qstat job
+                SoftwareDescription sd = new SoftwareDescription();
+                // Use /bin/sh, so that $USER gets expanded.
+                sd.setExecutable("/bin/sh");
+                sd.setArguments("-c", "qstat -u $USER");
+                sd.addAttribute(SoftwareDescription.SANDBOX_USEROOT, "true");
+                qstatResultFile = java.io.File.createTempFile("GAT", "tmp");
+                try {
+                    sd.setStdout(GAT.createFile(qstatResultFile.getAbsolutePath()));
+                } catch (GATObjectCreationException e1) {
+                    throw new GATInvocationException("Could not create GAT object for temporary " + qstatResultFile.getAbsolutePath(), e1);
+                }
+                JobDescription jd = new JobDescription(sd);
+                Job job = jobHelper.submitJob(jd, this, "job.status");
+                synchronized(job) {
+                    while (job.getState() != Job.JobState.STOPPED && job.getState() != Job.JobState.SUBMISSION_ERROR) {
+                        try {
+                            job.wait();
+                        } catch(InterruptedException e) {
+                            // ignore
+                        }
+                    }
+                }
+                if (job.getState() != Job.JobState.STOPPED || job.getExitStatus() != 0) {
+                    throw new GATInvocationException("Could not submit qstat job");
+                }
+
+                // submit success.
+                BufferedReader in = new BufferedReader(new FileReader(qstatResultFile.getAbsolutePath()));
+                String s;
+                while ((s = in.readLine()) != null) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("qstat  line: " + s);
+                    }
+                    result.add(s);
+                }
+            } catch (IOException e) {
+                logger.debug("retrieving job status sshpbsjob failed");
+                throw new GATInvocationException(
+                        "Unable to retrieve the Job Status", e);
+            } finally {
+                qstatResultFile.delete();
+            }
+
+            JobState s = mapSgeStatetoGAT(result);
+            if (s != JobState.STOPPED) {
+                setState(s);
+            } else {
+                setState(JobState.POST_STAGING);
+            }
+        } finally {
+            synchronized(this) {
+                jobStateBusy = false;
+                notifyAll();
+            }
         }
-	JobState s;
-	try {
-	    s = mapSgeStatetoGAT(cmd.outputAsLines());
-	    if (s != JobState.STOPPED) {
-		setState(s);
-	    } else {
-		setState(JobState.POST_STAGING);
-	    }
-	} catch (IOException e) {
-	    logger.debug("retrieving job status sshpbsjob failed");
-	    throw new GATInvocationException(
-		    "Unable to retrieve the Job Status", e);
-	}
     }
-
 
     private boolean sawJob = false;
     private int missedJob = 0;
@@ -194,12 +249,30 @@ public class SshSgeJob extends SimpleJobBase {
 	}
     }
 
-    protected synchronized void kill(String jobID) {
+    protected void kill(String jobID) {
 	try {
-	    jobHelper.runSshCommand("qdel", jobID);
+	    // Create qdel job
+            SoftwareDescription sd = new SoftwareDescription();
+            sd.setExecutable("qdel");
+            sd.setArguments(jobID);
+            sd.addAttribute(SoftwareDescription.SANDBOX_USEROOT, "true");
+            sd.addAttribute(SoftwareDescription.SANDBOX_ROOT, sandbox.getSandboxPath());
+            JobDescription jd = new JobDescription(sd);
+            Job job = jobHelper.submitJob(jd, this, "job.status");
+            synchronized(job) {
+                while (job.getState() != Job.JobState.STOPPED && job.getState() != Job.JobState.SUBMISSION_ERROR) {
+                    try {
+                        wait();
+                    } catch(InterruptedException e) {
+                        // ignore
+                    }
+                }
+            }
+            if (job.getState() != Job.JobState.STOPPED || job.getExitStatus() != 0) {
+                throw new GATInvocationException("Could not submit qdel job");
+            }
 	} catch (Throwable e) {
 	    logger.info("Failed to stop sshSge job: " + jobID, e);
-	    // TODO: what to do here?
 	}
     }
 
@@ -235,5 +308,14 @@ public class SshSgeJob extends SimpleJobBase {
 	    }
 	    fi.delete();
 	}
+    }
+
+    @Override
+    public void processMetricEvent(MetricEvent event) {
+        if (event.getValue().equals(Job.JobState.STOPPED) || event.getValue().equals(Job.JobState.SUBMISSION_ERROR)) {
+            synchronized(event.getSource()) {
+                event.getSource().notifyAll();
+            }
+        }       
     }
 }

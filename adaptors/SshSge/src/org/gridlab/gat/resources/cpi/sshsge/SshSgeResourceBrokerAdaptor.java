@@ -9,8 +9,8 @@ import java.io.PrintWriter;
 
 import java.lang.StringBuffer;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.net.URISyntaxException;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
@@ -23,24 +23,26 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.engine.util.SshHelper;
 import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.WrapperJobCpi;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
+public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi implements MetricListener {
 
     protected static Logger logger = LoggerFactory
 	    .getLogger(SshSgeResourceBrokerAdaptor.class);
@@ -53,10 +55,9 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	return capabilities;
     }
 
-    static final String SSH_PORT_STRING = "sshsge.ssh.port";
     static final String SSHSGE_NATIVE_FLAGS = "sshsge.native.flags";
     static final String SSHSGE_SCRIPT = "sshsge.script";
-    static final String SSH_STRICT_HOST_KEY_CHECKING = "sshsge.StrictHostKeyChecking";
+    static final String SSHSGE_SUBMITTER_SCHEME = "sshsge.submitter.scheme";
 
     public static String[] getSupportedSchemes() {
 	return new String[] { "sshsge"};
@@ -64,24 +65,41 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
     
     public static Preferences getSupportedPreferences() {
         Preferences p = ResourceBrokerCpi.getSupportedPreferences();
-        p.put(SSH_PORT_STRING, "");        
         p.put(SSHSGE_NATIVE_FLAGS, "");
         p.put(SSHSGE_SCRIPT, "");
-        p.put(SSH_STRICT_HOST_KEY_CHECKING, "false");
+        p.put(SSHSGE_SUBMITTER_SCHEME, "ssh");
         return p;
     }
-
-    private final SshHelper sshHelper;
 
     public static void init() {
 	GATEngine.registerUnmarshaller(SshSgeJob.class);
     }
     
+    static ResourceBroker subResourceBroker(GATContext context, URI broker) throws URISyntaxException, GATObjectCreationException {
+        // Create a gatContext that can be used to submit qsub, qstat, etc commands.
+        Preferences prefs = new Preferences(context.getPreferences());
+        prefs.remove("resourcebroker.adaptor.name");
+        GATContext subContext = (GATContext) context.clone();
+        subContext.removePreferences();
+        subContext.addPreferences(prefs);
+        
+        // Create an URI
+        String subScheme = (String) prefs.get(SSHSGE_SUBMITTER_SCHEME, "ssh");
+        URI subBroker = broker.setScheme(subScheme);
+        return GAT.createResourceBroker(subContext, subBroker);
+    }
+    
+    private final ResourceBroker subBroker;
+    
     public SshSgeResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
 	    throws GATObjectCreationException, AdaptorNotApplicableException {
 
 	super(gatContext, brokerURI);
-	sshHelper = new SshHelper(gatContext, brokerURI, "sshsge", SSH_PORT_STRING, SSH_STRICT_HOST_KEY_CHECKING);
+	try {
+	    subBroker = subResourceBroker(gatContext, brokerURI);
+	} catch (Throwable e) {
+	    throw new GATObjectCreationException("Could not create broker to submit SGE jobs", e);
+	}
     }
 
     public Job submitJob(AbstractJobDescription abstractDescription,
@@ -133,7 +151,7 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 		true, true, true, true);
 
 	SshSgeJob sshSgeJob = new SshSgeJob(gatContext, brokerURI, description, sandbox,
-		sshHelper, returnValueFile);
+		subBroker, returnValueFile);
 	
         Job job = null;
         if (description instanceof WrapperJobDescription) {
@@ -453,23 +471,58 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    host = "localhost";
 	}
 
+	java.io.File qsubResultFile = null;
+
 	try {
 	    sandbox.prestage();
 	    
-	    // Create the ssh command for qsub...
-	    ArrayList<String> command = sshHelper.getSshCommand(false);
-	    if (sandbox.getSandboxPath() != null) {
-		command.add("cd");
-		command.add(SshHelper.protectAgainstShellMetas(sandbox.getSandboxPath()));
-		command.add("&&");
+	    // Create qsub job
+	    SoftwareDescription sd = new SoftwareDescription();
+	    sd.setExecutable("qsub");
+	    sd.setArguments(qsubFile.getName());
+	    sd.addAttribute(SoftwareDescription.SANDBOX_USEROOT, "true");
+	    qsubResultFile = java.io.File.createTempFile("GAT", "tmp");
+	    try {
+	        sd.setStdout(GAT.createFile(qsubResultFile.getAbsolutePath()));
+	    } catch (GATObjectCreationException e1) {
+	        try {
+	            sandbox.removeSandboxDir();
+	        } catch(Throwable e) {
+	            // ignore
+	        }
+	        throw new GATInvocationException("Could not create GAT object for temporary " + qsubResultFile.getAbsolutePath(), e1);
 	    }
-	    CommandRunner runner = sshHelper.runSshCommand(command, "qsub", qsubFile.getName());
-	    List<String> sgeJobID = runner.outputAsLines();
-	    if (runner.getExitCode() != 0) {
-		throw new GATInvocationException("qsub gave exit status " + runner.getExitCode());
+	    sd.addAttribute(SoftwareDescription.DIRECTORY, sandbox.getSandboxPath());
+	    JobDescription jd = new JobDescription(sd);
+	    if (logger.isDebugEnabled()) {
+	        logger.debug("Submitting qsub job: " + sd);
 	    }
+	    Job job = subBroker.submitJob(jd, this, "job.status");
+	    synchronized(job) {
+	        while (job.getState() != Job.JobState.STOPPED && job.getState() != Job.JobState.SUBMISSION_ERROR) {
+	            try {
+	                job.wait();
+	            } catch(InterruptedException e) {
+	                // ignore
+	            }
+	        }
+	    }
+	    if (job.getState() != Job.JobState.STOPPED || job.getExitStatus() != 0) {
+	        try {
+	            sandbox.removeSandboxDir();
+	        } catch(Throwable e) {
+	            // ignore
+	        }
+	        throw new GATInvocationException("Could not submit qsub job");
+	    }
+	    
+	    // submit success.
+            BufferedReader in = new BufferedReader(new FileReader(qsubResultFile.getAbsolutePath()));
+            String result = in.readLine();
+            if (logger.isDebugEnabled()) {
+                logger.debug("qsub result line = " + result);
+            }
 
-	    String result = sgeJobID.get(0);
 	    // Check for SGE qsub result ...
 	    if (result.startsWith("Your job ")) {
 		result = result.split(" ")[2];
@@ -477,18 +530,28 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	    return result;
 	} catch (IOException e) {
+	    try {
+	        sandbox.removeSandboxDir();
+	    } catch(Throwable e1) {
+	        // ignore
+	    }
 	    throw new GATInvocationException("Got IOException", e);
 	} finally {
+	    qsubResultFile.delete();
 	    qsubFile.delete();
 	    script.delete();
 	    if (starter != null) {
 		starter.delete();
 	    }
-	    try {
-	        sandbox.removeSandboxDir();
-	    } catch(Throwable e) {
-	        // ignore
-	    }
 	}
+    }
+
+    @Override
+    public void processMetricEvent(MetricEvent event) {
+        if (event.getValue().equals(Job.JobState.STOPPED) || event.getValue().equals(Job.JobState.SUBMISSION_ERROR)) {
+            synchronized(event.getSource()) {
+                event.getSource().notifyAll();
+            }
+        }
     }
 }

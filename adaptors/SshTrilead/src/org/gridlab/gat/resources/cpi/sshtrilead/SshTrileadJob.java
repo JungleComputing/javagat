@@ -58,11 +58,13 @@ public class SshTrileadJob extends JobCpi {
         this.session = session;
     }
 
-    protected synchronized void setState(JobState state) {
-        if (this.state == state) {
-            return;
+    protected void setState(JobState state) {
+        synchronized(this) {
+            if (this.state == state) {
+                return;
+            }
+            this.state = state;
         }
-        this.state = state;
         MetricEvent v = new MetricEvent(this, state, statusMetric, System
                 .currentTimeMillis());
         fireMetric(v);

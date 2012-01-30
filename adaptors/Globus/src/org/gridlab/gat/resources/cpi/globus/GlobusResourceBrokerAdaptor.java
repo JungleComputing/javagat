@@ -514,7 +514,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // if output should be streamed, don't poststage it!
         Sandbox sandbox = new Sandbox(gatContext, description, host, null,
-                true, true, sd.getStdout() != null, sd.getStderr() != null);
+                true, true, true, true);
         GlobusJob globusJob = new GlobusJob(gatContext, description, sandbox);
         Job job = null;
         if (description instanceof WrapperJobDescription) {

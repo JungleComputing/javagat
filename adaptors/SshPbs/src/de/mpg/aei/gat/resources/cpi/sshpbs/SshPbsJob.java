@@ -11,33 +11,39 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
-import org.gridlab.gat.engine.util.CommandRunner;
-import org.gridlab.gat.engine.util.SshHelper;
+import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.SerializedSimpleJobBase;
 import org.gridlab.gat.resources.cpi.SimpleJobBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * @author Alexander Beck-Ratzka, AEI, June 10th 2010, created
- */
+public class SshPbsJob extends SimpleJobBase implements MetricListener {
 
-public class SshPbsJob extends SimpleJobBase {
+    protected static Logger logger = LoggerFactory
+            .getLogger(SshPbsJob.class);
 
     // private static String regexString = "[ ][ ]";
     private static String regexString = "\\s\\s*";
 
     private static final long serialVersionUID = 1L;
     
-    private final SshHelper jobHelper;
+    private final ResourceBroker jobHelper;
 
     /**
      * constructor of SshPbsJob
@@ -49,7 +55,7 @@ public class SshPbsJob extends SimpleJobBase {
      */
     protected SshPbsJob(GATContext gatContext,
 	    URI brokerURI, JobDescription jobDescription,
-	    Sandbox sandbox, SshHelper jobHelper, String returnValueFile) {
+	    Sandbox sandbox, ResourceBroker jobHelper, String returnValueFile) {
 	super(gatContext, brokerURI, jobDescription, sandbox, returnValueFile);
 	this.jobHelper = jobHelper;
     }
@@ -61,9 +67,12 @@ public class SshPbsJob extends SimpleJobBase {
     public SshPbsJob(GATContext gatContext, SerializedSimpleJobBase sj)
 	    throws GATObjectCreationException {
 	super(gatContext, sj);
-	jobHelper = new SshHelper(gatContext, brokerURI, "sshpbs",
-		SshPbsResourceBrokerAdaptor.SSH_PORT_STRING,
-		SshPbsResourceBrokerAdaptor.SSH_STRICT_HOST_KEY_CHECKING);
+	try {
+	    jobHelper = SshPbsResourceBrokerAdaptor.subResourceBroker(gatContext, brokerURI);
+	} catch (URISyntaxException e) {
+	    throw new GATObjectCreationException("Could not create broker to get PBS job status", e);
+	}
+
 	startListener();
     }
 
@@ -89,40 +98,100 @@ public class SshPbsJob extends SimpleJobBase {
 	super.startListener();
     }
 
-    protected synchronized void getJobState(String jobID) throws GATInvocationException {
-	
-        if (state == JobState.POST_STAGING || state == JobState.STOPPED
-                || state == JobState.SUBMISSION_ERROR) {
-            return;
-        }
-
-	logger.debug("Getting task status in setState()");
-
-	//  getting the status via ssh ... qstat
-	
-	
-	List<String> command = jobHelper.getSshCommand(false);
-	command.add("qstat");
-	command.add("-u");
-	command.add("$USER");
-        CommandRunner cmd = jobHelper.runSshCommand(command);
-        if (cmd.getExitCode() != 0) {
-            throw new GATInvocationException("qstat gives exitcode " +  cmd.getExitCode());
-        }
-	JobState s;
-	try {
-	    s = mapPbsStatetoGAT(cmd.outputAsLines());
-	    if (s != JobState.STOPPED) {
-		setState(s);
-	    } else {
-		setState(JobState.POST_STAGING);
+    boolean jobStateBusy = false;
+    
+    protected void getJobState(String jobID) throws GATInvocationException {
+	synchronized(this) {
+	    while (jobStateBusy) {
+	        try {
+	            wait();
+	        } catch(InterruptedException e) {
+	            // ignore
+	        }
 	    }
-	} catch (IOException e) {
-	    logger.debug("retrieving job status sshpbsjob failed");
-	    throw new GATInvocationException(
-		    "Unable to retrieve the Job Status", e);
+	    jobStateBusy = true;
 	}
-    }
+	if (logger.isDebugEnabled()) {
+	    logger.debug("Entering getJobState");
+	}
+	try {
+	    if (state == JobState.POST_STAGING || state == JobState.STOPPED
+	            || state == JobState.SUBMISSION_ERROR) {
+	        if (logger.isDebugEnabled()) {
+	            logger.debug("returning from getJobState, state = " + state);
+	        }
+	        return;
+	    }
+
+	    logger.debug("Getting task status in setState()");
+
+	    java.io.File qstatResultFile = null;
+	    ArrayList<String> result = new ArrayList<String>();
+
+	    try {    
+	        // Create qstat job
+	        SoftwareDescription sd = new SoftwareDescription();
+	        // Indirection via /bin/sh so that $USER argument gets expanded.
+	        sd.setExecutable("/bin/sh");
+	        sd.setArguments("-c", "qstat -u $USER");
+	        sd.addAttribute(SoftwareDescription.SANDBOX_USEROOT, "true");
+	        sd.addAttribute(SoftwareDescription.SANDBOX_ROOT, sandbox.getSandboxPath());
+	        qstatResultFile = java.io.File.createTempFile("GAT", "tmp");
+	        try {
+	            sd.setStdout(GAT.createFile(qstatResultFile.getAbsolutePath()));
+	        } catch (GATObjectCreationException e1) {
+	            throw new GATInvocationException("Could not create GAT object for temporary " + qstatResultFile.getAbsolutePath(), e1);
+	        }
+	        JobDescription jd = new JobDescription(sd);
+	        Job job = jobHelper.submitJob(jd, this, "job.status");
+	        synchronized (job) {
+	            while (job.getState() != Job.JobState.STOPPED && job.getState() != Job.JobState.SUBMISSION_ERROR) {
+	                synchronized(this) {
+	                    try {
+	                        job.wait();
+	                    } catch(InterruptedException e) {
+	                        // ignore
+	                    }
+	                }
+	            }
+	        }
+	        if (job.getState() != Job.JobState.STOPPED || job.getExitStatus() != 0) {
+	            throw new GATInvocationException("Could not submit qstat job");
+	        }
+
+	        // qstat success.
+	        BufferedReader in = new BufferedReader(new FileReader(qstatResultFile.getAbsolutePath()));
+	        String str;
+	        while ((str = in.readLine()) != null) {
+	            if (logger.isDebugEnabled()) {
+	                logger.debug("qstat  line: " + str);
+	            }
+	            result.add(str);
+	        }
+	    } catch (IOException e) {
+	        logger.debug("retrieving job status sshpbsjob failed");
+	        throw new GATInvocationException(
+	                "Unable to retrieve the Job Status", e);
+	    } finally {
+	        qstatResultFile.delete();
+	    }
+
+	    JobState s = mapPbsStatetoGAT(result);
+	    if (s != JobState.STOPPED) {
+	        setState(s);
+	    } else {
+	        setState(JobState.POST_STAGING);
+	    }
+	} finally {
+	    synchronized(this) {
+	        jobStateBusy = false;
+	        notifyAll();
+	    }
+	}
+	if (logger.isDebugEnabled()) {
+	    logger.debug("returning from getJobState, state = " + state);
+	}
+    } 
 
 
     private boolean sawJob = false;
@@ -140,6 +209,9 @@ public class SshPbsJob extends SimpleJobBase {
 
 	String[] splits = null;
 
+	if (logger.isDebugEnabled()) {
+	    logger.debug("enter mapPbsStatetoGAT");
+	}
 	if (pbsState == null) {
 	    logger.error("Error in mapPbsStatetoGAT: no PbsState returned");
 	    return JobState.UNKNOWN;
@@ -150,6 +222,9 @@ public class SshPbsJob extends SimpleJobBase {
 		// Note: PBS qstat sometimes does not print the complete job identifier.
 		// On lisa.sara.nl, for example, if the job identifier is 5823458.batch1.irc.sara.nl,
 		// qstat only prints 5823458.batch1. --Ceriel
+		if (logger.isDebugEnabled()) {
+		    logger.debug("Saw job " + splits[0]);
+		}
 		if (this.jobID.startsWith(splits[0])) {
 		    if (logger.isDebugEnabled()) {
 			logger.debug("Found job: " + splits[0] + ", JobID = " + this.jobID);
@@ -222,12 +297,30 @@ public class SshPbsJob extends SimpleJobBase {
 	}
     }
 
-    protected synchronized void kill(String jobID) {
+    protected void kill(String jobID) {
 	try {
-	    jobHelper.runSshCommand("qdel", jobID);
-	} catch (Throwable e) {
-	    logger.info("Failed to stop sshPbs job: " + jobID, e);
-	    // TODO: what to do here?
+	    // Create qdel job
+            SoftwareDescription sd = new SoftwareDescription();
+            sd.setExecutable("qdel");
+            sd.setArguments(jobID);
+            sd.addAttribute(SoftwareDescription.SANDBOX_USEROOT, "true");
+            sd.addAttribute(SoftwareDescription.SANDBOX_ROOT, sandbox.getSandboxPath());
+            JobDescription jd = new JobDescription(sd);
+            Job job = jobHelper.submitJob(jd, this, "job.status");
+            synchronized(job) {
+                while (job.getState() != Job.JobState.STOPPED && job.getState() != Job.JobState.SUBMISSION_ERROR) {
+                    try {
+                        job.wait();
+                    } catch(InterruptedException e) {
+                        // ignore
+                    }
+                }
+            }
+            if (job.getState() != Job.JobState.STOPPED || job.getExitStatus() != 0) {
+                throw new GATInvocationException("Could not submit qdel job");
+            }
+        } catch (Throwable e) {
+            logger.info("Failed to stop sshPbs job: " + jobID, e);
 	}
     }
 
@@ -264,4 +357,14 @@ public class SshPbsJob extends SimpleJobBase {
 	    fi.delete();
 	}
     }
+    
+    @Override
+    public void processMetricEvent(MetricEvent event) {
+        if (event.getValue().equals(Job.JobState.STOPPED) || event.getValue().equals(Job.JobState.SUBMISSION_ERROR)) {
+            synchronized(event.getSource()) {
+                event.getSource().notifyAll();
+            }
+        }       
+    }
+
 }

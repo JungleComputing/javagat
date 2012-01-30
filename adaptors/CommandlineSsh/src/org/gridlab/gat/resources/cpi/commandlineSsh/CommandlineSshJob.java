@@ -102,10 +102,12 @@ public class CommandlineSshJob extends JobCpi {
         }
     }
 
-    protected synchronized void setState(JobState state) {
-        this.state = state;
+    protected void setState(JobState state) {
+        synchronized(this) {
+            this.state = state;
+        }
         MetricEvent v = new MetricEvent(this, state, statusMetric, System
-                .currentTimeMillis());
+                    .currentTimeMillis());
         fireMetric(v);
     }
 

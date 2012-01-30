@@ -78,7 +78,7 @@ public abstract class SimpleJobBase extends JobCpi {
 	    sandbox.setContext(gatContext);
 	}
 	if (logger.isDebugEnabled()) {
-	    logger.debug("reconstructing SshPbsJob: " + sj);
+	    logger.debug("reconstructing Job: " + sj);
 	}
 	
 	try {
@@ -130,20 +130,22 @@ public abstract class SimpleJobBase extends JobCpi {
     
     protected abstract Integer retrieveExitStatus(String returnValueFile);
 
-    protected synchronized void setState(JobState state) {
-	if (submissiontime == 0) {
-	    setSubmissionTime();
-	}
-	if (this.state != state) {
-	    this.state = state;
-	    if (state == JobState.RUNNING || state == JobState.POST_STAGING || state == JobState.STOPPED) {
-		if (starttime == 0) {
-		    setStartTime();
-		}
-	    }
-	    if (state == JobState.STOPPED) {
-		setStopTime();
-	    }
+    protected void setState(JobState state) {
+        synchronized(this) {
+            if (submissiontime == 0) {
+                setSubmissionTime();
+            }
+            if (this.state != state) {
+                this.state = state;
+                if (state == JobState.RUNNING || state == JobState.POST_STAGING || state == JobState.STOPPED) {
+                    if (starttime == 0) {
+                        setStartTime();
+                    }
+                }
+                if (state == JobState.STOPPED) {
+                    setStopTime();
+                }
+            }
 	    MetricEvent v = new MetricEvent(this, state, statusMetric, System
 		    .currentTimeMillis());
 	    fireMetric(v);
@@ -180,7 +182,7 @@ public abstract class SimpleJobBase extends JobCpi {
 		}
 	    }
 	    if (state == JobState.SUBMISSION_ERROR) {
-		logger.error("SshPbs job " + jobID + "failed");
+		logger.error("Job " + jobID + "failed");
 		return;
 	    }
 	    if (state == JobState.STOPPED || state == JobState.POST_STAGING) {

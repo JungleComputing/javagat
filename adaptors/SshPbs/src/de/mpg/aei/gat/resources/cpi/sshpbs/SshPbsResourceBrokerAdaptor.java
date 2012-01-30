@@ -13,33 +13,30 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-
-import java.lang.StringBuffer;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.gridlab.gat.AdaptorNotApplicableException;
-import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.engine.util.SshHelper;
 import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.ResourceDescription;
+import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -47,13 +44,7 @@ import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * 
- * @author Alexander Beck-Ratzka, AEI.
- * 
- */
-
-public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
+public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi implements MetricListener {
 
     protected static Logger logger = LoggerFactory
 	    .getLogger(SshPbsResourceBrokerAdaptor.class);
@@ -66,35 +57,52 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	return capabilities;
     }
 
-    static final String SSH_PORT_STRING = "sshpbs.ssh.port";
     static final String SSHPBS_NATIVE_FLAGS = "sshpbs.native.flags";
     static final String SSHPBS_SCRIPT = "sshpbs.script";
-    static final String SSH_STRICT_HOST_KEY_CHECKING = "sshpbs.StrictHostKeyChecking";
+    static final String SSHPBS_SUBMITTER_SCHEME = "sshpbs.submitter.scheme";
 
     public static String[] getSupportedSchemes() {
 	return new String[] { "sshpbs"};
     }
     
     public static Preferences getSupportedPreferences() {
-        Preferences p = ResourceBrokerCpi.getSupportedPreferences();
-        p.put(SSH_PORT_STRING, "");        
+        Preferences p = ResourceBrokerCpi.getSupportedPreferences();   
         p.put(SSHPBS_NATIVE_FLAGS, "");
         p.put(SSHPBS_SCRIPT, "");
-        p.put(SSH_STRICT_HOST_KEY_CHECKING, "false");
+        p.put(SSHPBS_SUBMITTER_SCHEME, "ssh");
         return p;
     }
-
-    private final SshHelper sshHelper;
 
     public static void init() {
 	GATEngine.registerUnmarshaller(SshPbsJob.class);
     }
     
+    static ResourceBroker subResourceBroker(GATContext context, URI broker) throws URISyntaxException, GATObjectCreationException {
+        // Create a gatContext that can be used to submit qsub, qstat, etc commands.
+        Preferences prefs = new Preferences(context.getPreferences());
+        prefs.remove("resourcebroker.adaptor.name");
+        GATContext subContext = (GATContext) context.clone();
+        subContext.removePreferences();
+        subContext.addPreferences(prefs);
+
+        // Create an URI
+        String subScheme = (String) prefs.get(SSHPBS_SUBMITTER_SCHEME, "ssh");
+        URI subBroker = broker.setScheme(subScheme);
+        return GAT.createResourceBroker(subContext, subBroker);
+    }
+
+    private final ResourceBroker subBroker;
+
     public SshPbsResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
-	    throws GATObjectCreationException, AdaptorNotApplicableException {
+            throws GATObjectCreationException, AdaptorNotApplicableException {
 
 	super(gatContext, brokerURI);
-	sshHelper = new SshHelper(gatContext, brokerURI, "sshpbs", SSH_PORT_STRING, SSH_STRICT_HOST_KEY_CHECKING);
+	try {
+	    subBroker = subResourceBroker(gatContext, brokerURI);
+	} catch (Throwable e) {
+	    throw new GATObjectCreationException("Could not create broker to submit PBS jobs", e);
+	}
+
     }
 
     public Job submitJob(AbstractJobDescription abstractDescription,
@@ -145,7 +153,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		true, true, true, true);
 
 	SshPbsJob sshPbsJob = new SshPbsJob(gatContext, brokerURI, description, sandbox,
-		sshHelper, returnValueFile);
+		subBroker, returnValueFile);
 	
         Job job = null;
         if (description instanceof WrapperJobDescription) {
@@ -309,7 +317,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		if (sd.getStderr() != null) {
 		    job.addOption("e", sd.getStderr().getName());
 		}
-
+                job.println("cd $PBS_O_WORKDIR");
                 job.println("trap 'echo retvalue = 1 > " + returnValueFile + " && exit 1' 1 2 3 15");
                 if (jobStarterFile != null) {
                     job.println("/bin/sh " + jobStarterFile.getName() + " < /dev/null > /dev/null 2>&1 &");
@@ -471,46 +479,86 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	if (host == null) {
 	    host = "localhost";
 	}
-
+	
+        java.io.File qsubResultFile = null;
 	try {
-	    CommandRunner runner;
-	    
 	    sandbox.prestage();
 
-	    ArrayList<String> command = sshHelper.getSshCommand(false);
-	    if (sandbox.getSandboxPath() != null) {
-		command.add("cd");
-		command.add(SshHelper.protectAgainstShellMetas(sandbox.getSandboxPath()));
-		command.add("&&");
-		command.add("qsub");
-		command.add("-d");
-		command.add("`pwd`");	// Not to be protected, so added separately.
-		runner = sshHelper.runSshCommand(command, qsubFile.getName());
-	    } else {
-		runner = sshHelper.runSshCommand(command, "qsub", qsubFile.getName());
+	    // Create qsub job
+	    SoftwareDescription sd = new SoftwareDescription();
+	    sd.setExecutable("qsub");
+	    sd.setArguments(qsubFile.getName());
+	    sd.addAttribute(SoftwareDescription.SANDBOX_USEROOT, "true");
+	    sd.addAttribute(SoftwareDescription.SANDBOX_ROOT, sandbox.getSandboxPath());
+	    qsubResultFile = java.io.File.createTempFile("GAT", "tmp");
+	    try {
+	        sd.setStdout(GAT.createFile(qsubResultFile.getAbsolutePath()));
+	    } catch (GATObjectCreationException e1) {
+	        try {
+	            sandbox.removeSandboxDir();
+	        } catch(Throwable e) {
+	            // ignore
+	        }
+	        throw new GATInvocationException("Could not create GAT object for temporary " + qsubResultFile.getAbsolutePath(), e1);
 	    }
-	    List<String> PbsJobID = runner.outputAsLines();
-	    if (runner.getExitCode() != 0) {
-		throw new GATInvocationException("qsub gave exit status " + runner.getExitCode());
+	    sd.addAttribute(SoftwareDescription.DIRECTORY, sandbox.getSandboxPath());
+	    JobDescription jd = new JobDescription(sd);
+	    if (logger.isDebugEnabled()) {
+	        logger.debug("Submitting qsub job: " + sd);
+	    }
+	    Job job = subBroker.submitJob(jd, this, "job.status");
+	    synchronized(job) {
+	        while (job.getState() != Job.JobState.STOPPED && job.getState() != Job.JobState.SUBMISSION_ERROR) {
+	            try {
+	                job.wait();
+	            } catch(InterruptedException e) {
+	                // ignore
+	            }
+	        }
+	    }
+	    if (job.getState() != Job.JobState.STOPPED || job.getExitStatus() != 0) {
+	        try {
+	            sandbox.removeSandboxDir();
+	        } catch(Throwable e) {
+	            // ignore
+	        }
+	        throw new GATInvocationException("Could not submit qsub job");
 	    }
 
-	    String result = PbsJobID.get(0);
+	    // submit success.
+	    BufferedReader in = new BufferedReader(new FileReader(qsubResultFile.getAbsolutePath()));
+	    String result = in.readLine();
+	    if (logger.isDebugEnabled()) {
+	        logger.debug("qsub result line = " + result);
+	    }
 
 	    return result;
 
 	} catch (IOException e) {
+	    try {
+	        sandbox.removeSandboxDir();
+	    } catch(Throwable e1) {
+	        // ignore
+	    }
 	    throw new GATInvocationException("Got IOException", e);
 	} finally {
+	    qsubResultFile.delete();
 	    qsubFile.delete();
             script.delete();
             if (starter != null) {
                 starter.delete();
             }
-            try {
-                sandbox.removeSandboxDir();
-            } catch(Throwable e) {
-                // ignore
-            }
 	}
     }
+    
+
+    @Override
+    public void processMetricEvent(MetricEvent event) {
+        if (event.getValue().equals(Job.JobState.STOPPED) || event.getValue().equals(Job.JobState.SUBMISSION_ERROR)) {
+            synchronized(event.getSource()) {
+                event.getSource().notifyAll();
+            }
+        }
+    }
+
 }
