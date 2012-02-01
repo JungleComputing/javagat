@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.ServerSocket;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.trilead.ssh2.Connection;
 import com.trilead.ssh2.DebugLogger;
+import com.trilead.ssh2.LocalPortForwarder;
 import com.trilead.ssh2.SCPClient;
 import com.trilead.ssh2.Session;
 import com.trilead.ssh2.StreamGobbler;
@@ -91,6 +93,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         // Added: preferences for hostkey checking. Defaults are what used to be ....
         preferences.put("sshtrilead.strictHostKeyChecking", "false");
         preferences.put("sshtrilead.noHostKeyChecking", "true");
+        preferences.put("ssh.gateway.uri", null);
         
         preferences.put("file.chmod", DEFAULT_MODE);
         return preferences;
@@ -876,7 +879,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                     server2clientCiphers, verifier);
     }
     
-    SCPClient getSCPClient() throws IOException, GATInvocationException {
+    private SCPClient getSCPClient() throws IOException, GATInvocationException {
 	Connection connection;
         connection = getConnection(fixedURI, gatContext,
                     connectionCacheEnable, tcpNoDelay, client2serverCiphers,
@@ -945,11 +948,21 @@ public class SshTrileadFileAdaptor extends FileCpi {
 	}
 	connections.clear();
     }
- 
+
+    public static int findFreePort()
+            throws IOException {
+        ServerSocket server =
+                new ServerSocket(0);
+        int port = server.getLocalPort();
+        server.close();
+        return port;
+    }
+    
     public static Connection getConnection(URI fixedURI, GATContext context,
             boolean useCachedConnection, boolean tcpNoDelay,
             String[] client2server, String[] server2client,
             HostKeyVerifier verifier) throws GATInvocationException {
+
         String host = fixedURI.getHost();
         int port = fixedURI.getPort(SSH_PORT);
         if (host == null) {
@@ -986,8 +999,65 @@ public class SshTrileadFileAdaptor extends FileCpi {
             if (logger.isDebugEnabled()) {
         	logger.debug("Setting up connection to " + host);
             }
-            newConnection = new Connection(host, fixedURI
-        	    .getPort(SSH_PORT));
+            
+            Preferences prefs = context.getPreferences();
+            URI gateway = null;
+            if (prefs != null) {
+                Object o = prefs.get("ssh.gateway.uri");
+                if (o != null) {
+                    if (o instanceof URI) {
+                        gateway = (URI) o;
+                    } else if (o instanceof String) {
+                        try {
+                            gateway = new URI((String) o);
+                        } catch (URISyntaxException e) {
+                            throw new GATInvocationException("Illegal uri in preference ssh.gateway.uri: " + o, e);
+                        }
+                    }
+                }
+            }
+            if (gateway != null) {
+                // First get a connection to the gateway.
+                GATContext clone = (GATContext) context.clone();
+                prefs = clone.getPreferences();
+                prefs.remove("ssh.gateway.uri");
+                clone.removePreferences();
+                clone.addPreferences(prefs);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Getting a connection to the gateway " + gateway);
+                    logger.debug("Context = " + clone);
+                }
+                Connection conn = getConnection(gateway, clone, useCachedConnection, tcpNoDelay, client2server, server2client, verifier);
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Got a connection to the gateway " + gateway);
+                 }
+
+                // Find a free local port.
+                int localPort;
+                try {
+                    localPort = findFreePort();
+                } catch (IOException e) {
+                    throw new GATInvocationException("Could not find a free port", e);
+                }
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Found local free port " + localPort);
+                }
+
+                // Create a local port forwarder.
+                try {
+                    LocalPortForwarder lpf1 = conn.createLocalPortForwarder(localPort, host, fixedURI.getPort(SSH_PORT));
+                } catch (IOException e) {
+                    throw new GATInvocationException("Got exception while creating local port forwarder");
+                }
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Got local port forwarder");
+                }
+                newConnection = new Connection("localhost", localPort);
+            } else {
+                newConnection = new Connection(host, fixedURI
+                        .getPort(SSH_PORT));
+            }
             if (logger.isDebugEnabled()) {
         	DebugLogger log = new DebugLogger() {
 
