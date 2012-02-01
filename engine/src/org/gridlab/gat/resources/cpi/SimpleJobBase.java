@@ -145,10 +145,11 @@ public abstract class SimpleJobBase extends JobCpi {
                 if (state == JobState.STOPPED) {
                     setStopTime();
                 }
+            
+                MetricEvent v = new MetricEvent(this, state, statusMetric, System
+                        .currentTimeMillis());
+                fireMetric(v);
             }
-	    MetricEvent v = new MetricEvent(this, state, statusMetric, System
-		    .currentTimeMillis());
-	    fireMetric(v);
 	}
     }
 
