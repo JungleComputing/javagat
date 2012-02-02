@@ -273,8 +273,23 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
 		if (Nodes != 1) {
 		    job.addOption("l", "nodes=" + Nodes);
 		}
+		
+		String nativeFlags = null;
+		Object o = rd.getResourceAttribute(SSHPBS_NATIVE_FLAGS);
+		if (o != null && o instanceof String) {
+		    nativeFlags = (String) o;
+		} else {
+		    String s = sd.getStringAttribute(SSHPBS_NATIVE_FLAGS, null);
+		    if (s != null) {
+			    nativeFlags = s;
+		    } else {
+			o = gatContext.getPreferences().get(SSHPBS_NATIVE_FLAGS);
+			if (o != null && o instanceof String) {
+			    nativeFlags = (String) o;
+			}
+		    }
+		}
 
-		String nativeFlags = (String) gatContext.getPreferences().get(SSHPBS_NATIVE_FLAGS);
 		if (nativeFlags != null) {
 		    String[] splits = nativeFlags.split("##");
 		    for (String s : splits) {
