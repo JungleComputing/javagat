@@ -213,10 +213,10 @@ public class AdaptorInvocationHandler implements InvocationHandler {
         try {
             result = adaptor.newInstance(newParameterTypes, newParameters);
         } catch (Throwable t) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("adaptor instantiation: "
+            if (logger.isDebugEnabled()) {
+                logger.debug("adaptor instantiation: "
                         + adaptor.getShortAdaptorClassName() + " for type "
-                        + adaptor.getCpi() + " FAILED");
+                        + adaptor.getCpi() + " FAILED", t);
             }
             GATObjectCreationException exc;
             if (t instanceof GATObjectCreationException) {
@@ -224,9 +224,6 @@ public class AdaptorInvocationHandler implements InvocationHandler {
             } else {
                 exc = new GATObjectCreationException();
                 exc.add(adaptor.toString(), t);
-            }
-            if (logger.isTraceEnabled()) {
-                logger.trace("reason: " + t);
             }
             throw exc;
         }
