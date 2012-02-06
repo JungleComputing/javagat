@@ -1,12 +1,15 @@
 ////////////////////////////////////////////////////////////////////
 //
 // LDAPResourceFinger.java
-// 
+//
 // Contributor(s):
-// Jun,Jul/2008 - Thomas Zangerl 
+// Jan/2012 - Stefan Verhoeven
+//     for Nederlands eScience Center
+//     grid.sara.nl srm.
+// Jun,Jul/2008 - Thomas Zangerl
 //      for Distributed and Parallel Systems Research Group
 //      University of Innsbruck
-// Jan/2009 - Max Berger 
+// Jan/2009 - Max Berger
 //      for Distributed and Parallel Systems Research Group
 //      University of Innsbruck
 //      SE/LFC implementations.
@@ -307,8 +310,10 @@ public class LDAPResourceFinder {
 
         ArrayList<SEInfo> results = new ArrayList<SEInfo>();
 
-        final String filter = "(&(objectClass~=GlueSA)(GlueSALocalID=" + voName
-                + "))";
+        final String filter = "(&(objectClass~=GlueSA)(|(GlueSALocalID=" + voName
+                + ")(GlueSAAccessControlBaseRule=VO*:"+ voName
+                + ")(GlueSAAccessControlBaseRule="+ voName
+                + ")))";
         final NamingEnumeration<SearchResult> searchResults = ctx.search(
                 START_DN, filter, globalSearchControls);
 
@@ -331,6 +336,11 @@ public class LDAPResourceFinder {
             }
 
             String path = getSafeStringAttr(result, "GlueSAPath");
+
+            if (path == null) {
+            	path = fetchVOInfoPath(voName, seUniqueId);
+            }
+
             String space = getSafeStringAttr(result,
                     "GlueSAStateAvailableSpace");
 
@@ -347,25 +357,41 @@ public class LDAPResourceFinder {
         return results;
     }
 
+    private String fetchVOInfoPath(final String voName, final String seUniqueId)
+    		throws NamingException {
+    	final String filter = "(&(objectClass~=GlueVOInfo)(GlueVOInfoAccessControlBaseRule=VO*:" + voName
+    			+ ")(GlueChunkKey=*"+ seUniqueId
+    			+ "))";
+    	final NamingEnumeration<SearchResult> searchResults = ctx.search(
+    			START_DN, filter, globalSearchControls);
+
+    	if (searchResults.hasMore()) {
+    		final SearchResult result = searchResults.nextElement();
+    		return getSafeStringAttr(result, "GlueVOInfoPath");
+    	} else {
+    		return null;
+    	}
+    }
+
     // only used for testing
     // public static void main(final String [] args) throws Exception {
     // SoftwareResourceDescription srd = new SoftwareResourceDescription();
     // HardwareResourceDescription hrd = new HardwareResourceDescription();
-    //		
+    //
     // List<String> gliteOSNames = new ArrayList<String>();
     // gliteOSNames.add("ScientificSL");
     // gliteOSNames.add("ScientificCERNSLC");
     // gliteOSNames.add("Scientific Linux CERN");
     // srd.addResourceAttribute("glite.OS", gliteOSNames);
-    //		
+    //
     // List<String> gliteProcessorNames = new ArrayList<String>();
     // gliteProcessorNames.add("PIV");
     // gliteProcessorNames.add("P4");
     // gliteProcessorNames.add("PIII");
     // srd.addResourceAttribute("glite.Processor", gliteProcessorNames);
-    //		
+    //
     // srd.addResourceAttribute("memory.size", new Float(1.0));
-    //		
+    //
     // LDAPResourceFinder finder = new LDAPResourceFinder();
     // //finder.findResources("voce");
     // finder.fetchCEs("compchem");
