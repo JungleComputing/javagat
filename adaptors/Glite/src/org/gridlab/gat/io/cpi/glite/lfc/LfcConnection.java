@@ -317,7 +317,7 @@ public class LfcConnection {
                     && (type != CSEC_TOKEN_TYPE_HANDSHAKE_FINAL)) {
                 throw new ReceiveException(sizeOrError, "Received invalid CSEC Type: " + type);
             }
-        } else if (magic == CNS_MAGIC) {
+        } else if (magic >= CNS_MAGIC) {        // Fix: was ==. Can also be CNS_MAGIC2?
             if ((type == CNS_RESP_IRC) || (type == CNS_RESP_RC)) {
                 if (sizeOrError == 0)
                     return 0;
