@@ -84,6 +84,7 @@ public class SrmConnection {
     private final ISRM service;
     private URI activeUploadURI;
     private String activeToken;
+    private TTransferParameters params;
     
     private static final int MAX_SRM_REQUEST_TRY = 8;
 
@@ -150,6 +151,11 @@ public class SrmConnection {
             LOGGER.warn(e.toString());
             throw new IOException(SrmConnection.COULD_NOT_LOAD_CREDENTIALS);
         }
+        
+        params = new TTransferParameters();
+        ArrayOfString a = new ArrayOfString();
+        a.setStringArray(new String[] { "gsiftp" });
+        params.setArrayOfTransferProtocols(a);
     }
 
     public String getTURLForFileDownload(String uriSpec) throws IOException {
@@ -160,10 +166,6 @@ public class SrmConnection {
         LOGGER.info("Creating get request for URI " + uriSpec);
         SrmPrepareToGetRequest srmPrepToGetReq = new SrmPrepareToGetRequest();
         srmPrepToGetReq.setAuthorizationID("SRMClient");
-        TTransferParameters params = new TTransferParameters();
-        ArrayOfString a = new ArrayOfString();
-        a.setStringArray(new String[] { "gsiftp" });
-        params.setArrayOfTransferProtocols(a);
         srmPrepToGetReq.setTransferParameters(params);
         
         // don't check out ANY directories
@@ -197,8 +199,8 @@ public class SrmConnection {
         SrmStatusOfGetRequestRequest statusRequest = new SrmStatusOfGetRequestRequest();
         statusRequest.setRequestToken(requestToken);
         statusRequest.setArrayOfSourceSURLs(new ArrayOfAnyURI(new URI[] { uri }));
-        
-        if ( !status.getStatusCode().equals( TStatusCode.SRM_REQUEST_QUEUED ) && ! status.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
+        TStatusCode s = status.getStatusCode();
+        if (! s.equals(TStatusCode.SRM_REQUEST_INPROGRESS) && ! s.equals( TStatusCode.SRM_REQUEST_QUEUED ) && ! s.equals(TStatusCode.SRM_SUCCESS)) {
         	String log= "Status: " + status.getStatusCode()+
     		"\n"+"Status exp: " + status.getExplanation()+
     		"\n"+"FileStatus: " + fileStatus.getStatus().getStatusCode()+
@@ -253,6 +255,7 @@ public class SrmConnection {
         LOGGER.info("Creating put request for URI " + uri);
         SrmPrepareToPutRequest srmPrepToPutReq = new SrmPrepareToPutRequest();
         srmPrepToPutReq.setAuthorizationID("SRMClient");
+        srmPrepToPutReq.setTransferParameters(params);
 
         UnsignedLong expFileSize = new UnsignedLong(localFile.length());
         TPutFileRequest putFileRequest = new TPutFileRequest(uri, expFileSize);
