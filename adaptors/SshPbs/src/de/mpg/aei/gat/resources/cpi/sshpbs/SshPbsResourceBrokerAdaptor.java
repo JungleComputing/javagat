@@ -77,28 +77,44 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
 	GATEngine.registerUnmarshaller(SshPbsJob.class);
     }
     
-    static ResourceBroker subResourceBroker(GATContext context, URI broker) throws URISyntaxException, GATObjectCreationException {
+    static GATContext getSubContext(GATContext context) {
         // Create a gatContext that can be used to submit qsub, qstat, etc commands.
-        Preferences prefs = new Preferences(context.getPreferences());
+        Preferences p = context.getPreferences();
+        Preferences prefs = new Preferences();
+        if (p != null) {
+            prefs.putAll(p);
+        }
+        prefs.remove("sshtrilead.stoppable");
         prefs.remove("resourcebroker.adaptor.name");
         GATContext subContext = (GATContext) context.clone();
         subContext.removePreferences();
         subContext.addPreferences(prefs);
 
-        // Create an URI
-        String subScheme = (String) prefs.get(SSHPBS_SUBMITTER_SCHEME, "ssh");
+        return subContext;
+    }
+
+    
+    static ResourceBroker subResourceBroker(GATContext context, URI broker) throws URISyntaxException, GATObjectCreationException {
+        String subScheme;
+        if (context.getPreferences() != null) {
+            subScheme = (String) context.getPreferences().get(SSHPBS_SUBMITTER_SCHEME, "ssh");
+        } else {
+            subScheme = "ssh";
+        }
         URI subBroker = broker.setScheme(subScheme);
-        return GAT.createResourceBroker(subContext, subBroker);
+        return GAT.createResourceBroker(context, subBroker);
     }
 
     private final ResourceBroker subBroker;
+    private final GATContext subContext;
 
     public SshPbsResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException, AdaptorNotApplicableException {
 
 	super(gatContext, brokerURI);
+	subContext = getSubContext(gatContext);
 	try {
-	    subBroker = subResourceBroker(gatContext, brokerURI);
+	    subBroker = subResourceBroker(subContext, brokerURI);
 	} catch (Throwable e) {
 	    throw new GATObjectCreationException("Could not create broker to submit PBS jobs", e);
 	}
@@ -507,7 +523,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
 	    sd.addAttribute(SoftwareDescription.SANDBOX_ROOT, sandbox.getSandboxPath());
 	    qsubResultFile = java.io.File.createTempFile("GAT", "tmp");
 	    try {
-	        sd.setStdout(GAT.createFile(qsubResultFile.getAbsolutePath()));
+	        sd.setStdout(GAT.createFile(subContext, qsubResultFile.getAbsolutePath()));
 	    } catch (GATObjectCreationException e1) {
 	        try {
 	            sandbox.removeSandboxDir();

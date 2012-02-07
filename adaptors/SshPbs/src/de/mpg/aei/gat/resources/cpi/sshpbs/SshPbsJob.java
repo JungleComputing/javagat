@@ -45,6 +45,8 @@ public class SshPbsJob extends SimpleJobBase implements MetricListener {
     
     private final ResourceBroker jobHelper;
 
+    private final GATContext subContext;
+
     /**
      * constructor of SshPbsJob
      * 
@@ -57,6 +59,7 @@ public class SshPbsJob extends SimpleJobBase implements MetricListener {
 	    URI brokerURI, JobDescription jobDescription,
 	    Sandbox sandbox, ResourceBroker jobHelper, String returnValueFile) {
 	super(gatContext, brokerURI, jobDescription, sandbox, returnValueFile);
+	subContext = SshPbsResourceBrokerAdaptor.getSubContext(gatContext);
 	this.jobHelper = jobHelper;
     }
 
@@ -67,8 +70,9 @@ public class SshPbsJob extends SimpleJobBase implements MetricListener {
     public SshPbsJob(GATContext gatContext, SerializedSimpleJobBase sj)
 	    throws GATObjectCreationException {
 	super(gatContext, sj);
+	subContext = SshPbsResourceBrokerAdaptor.getSubContext(gatContext);
 	try {
-	    jobHelper = SshPbsResourceBrokerAdaptor.subResourceBroker(gatContext, brokerURI);
+	    jobHelper = SshPbsResourceBrokerAdaptor.subResourceBroker(subContext, brokerURI);
 	} catch (URISyntaxException e) {
 	    throw new GATObjectCreationException("Could not create broker to get PBS job status", e);
 	}
@@ -138,7 +142,7 @@ public class SshPbsJob extends SimpleJobBase implements MetricListener {
 	        sd.addAttribute(SoftwareDescription.SANDBOX_ROOT, sandbox.getSandboxPath());
 	        qstatResultFile = java.io.File.createTempFile("GAT", "tmp");
 	        try {
-	            sd.setStdout(GAT.createFile(qstatResultFile.getAbsolutePath()));
+	            sd.setStdout(GAT.createFile(subContext, qstatResultFile.getAbsolutePath()));
 	        } catch (GATObjectCreationException e1) {
 	            throw new GATInvocationException("Could not create GAT object for temporary " + qstatResultFile.getAbsolutePath(), e1);
 	        }

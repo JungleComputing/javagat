@@ -36,11 +36,14 @@ public class SshSgeJob extends SimpleJobBase implements MetricListener {
 
     private final ResourceBroker jobHelper;
     
+    private final GATContext subContext;
+    
     protected SshSgeJob(GATContext gatContext,
 	    URI brokerURI, JobDescription jobDescription,
 	    Sandbox sandbox, ResourceBroker jobHelper, String returnValueFile) {
 	super(gatContext, brokerURI, jobDescription, sandbox, returnValueFile);
 	this.jobHelper = jobHelper;
+	subContext = SshSgeResourceBrokerAdaptor.getSubContext(gatContext);
     }
 
     /**
@@ -49,9 +52,12 @@ public class SshSgeJob extends SimpleJobBase implements MetricListener {
 
     public SshSgeJob(GATContext gatContext, SerializedSimpleJobBase sj)
 	    throws GATObjectCreationException {
-	super(gatContext, sj);
+	super(gatContext, sj); 
+	
+	subContext = SshSgeResourceBrokerAdaptor.getSubContext(gatContext);
+	
 	try {
-	    jobHelper = SshSgeResourceBrokerAdaptor.subResourceBroker(gatContext, brokerURI);
+	    jobHelper = SshSgeResourceBrokerAdaptor.subResourceBroker(subContext, brokerURI);
 	} catch (URISyntaxException e) {
 	    throw new GATObjectCreationException("Could not create broker to get SGE job status", e);
 	}
@@ -113,7 +119,7 @@ public class SshSgeJob extends SimpleJobBase implements MetricListener {
                 sd.addAttribute(SoftwareDescription.SANDBOX_USEROOT, "true");
                 qstatResultFile = java.io.File.createTempFile("GAT", "tmp");
                 try {
-                    sd.setStdout(GAT.createFile(qstatResultFile.getAbsolutePath()));
+                    sd.setStdout(GAT.createFile(subContext, qstatResultFile.getAbsolutePath()));
                 } catch (GATObjectCreationException e1) {
                     throw new GATInvocationException("Could not create GAT object for temporary " + qstatResultFile.getAbsolutePath(), e1);
                 }
