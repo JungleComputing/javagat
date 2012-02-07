@@ -58,7 +58,7 @@ class SshContextCreator implements SecurityContextCreator {
                 credentials.put("privatekeyslot", "" + c.getPrivateKeySlot());
                 return credentials;
             } else { // public / private key
-                if (!c.getKeyfile().refersToLocalHost()) {
+                if (! c.getKeyfile().isCompatible("file") || !c.getKeyfile().refersToLocalHost()) {
                     if (logger.isDebugEnabled()) {
                         logger
                                 .debug("WARNING: URI for key file does not refer to local host, skipping this security context");
