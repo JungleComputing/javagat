@@ -260,9 +260,10 @@ public class LocalFileAdaptor extends FileCpi {
      *                The new location
      */
     public void copy(URI destination) throws GATInvocationException {
-        if (!destination.refersToLocalHost()) {
+        if ((! destination.isCompatible("file") && ! destination.isCompatible("local"))
+                || !destination.refersToLocalHost()) {
             throw new MethodNotApplicableException(
-                    "default file: cannot copy to remote destination");
+                    "LocalFile: cannot copy to remote destination");
         }
         
         destination = newcorrectURI(destination);
@@ -708,11 +709,12 @@ public class LocalFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#move(java.net.URI)
      */
     public void move(URI destination) throws GATInvocationException {
-        if (!destination.refersToLocalHost()) {
+        if ((! destination.isCompatible("file") && ! destination.isCompatible("local"))
+                || !destination.refersToLocalHost()) {
             throw new MethodNotApplicableException(
                     "LocalFile: cannot move to remote destination");
         }
-        
+
         destination = newcorrectURI(destination);
         String path = getPath();
         String destPath = destination.getPath();
@@ -750,6 +752,11 @@ public class LocalFileAdaptor extends FileCpi {
     public boolean renameTo(org.gridlab.gat.io.File arg0)
             throws GATInvocationException {
         URI arg = arg0.toGATURI();
+        if ((! arg.isCompatible("file") && ! arg.isCompatible("local"))
+                || !arg.refersToLocalHost()) {
+            throw new MethodNotApplicableException(
+                    "LocalFile: cannot rename to remote destination");
+        }
         if (! arg.refersToLocalHost()) {
             throw new GATInvocationException("LocalFile: cannot rename to remote destination");
         }

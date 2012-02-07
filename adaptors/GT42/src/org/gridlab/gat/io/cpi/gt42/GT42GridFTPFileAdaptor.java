@@ -235,8 +235,8 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
     public void copy(URI dest) throws GATInvocationException {
         // determinate dest is a directory, and pass the filename if it is,
         // otherwise it will fail
-        
-        if (dest.refersToLocalHost() && location.refersToLocalHost()) {
+        boolean destIsLocal = dest.isCompatible("file") && dest.refersToLocalHost();
+        if (destIsLocal && localFile) {
             throw new GATInvocationException("local-->local copy not implemented by GT42 adaptor");
         }
         if (determineIsDirectory()) {
@@ -275,13 +275,13 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
                 // leave everything as it is
             }
         }
-        if (dest.isLocal()) {
+        if (destIsLocal) {
             if (logger.isDebugEnabled()) {
                 logger.debug("GT42GridFTPFileAdaptor: copy remote to local");
             }
             copyToLocal(dest);
             return;
-        } else if (location.refersToLocalHost()) {
+        } else if (localFile) {
             copyToRemote(dest);
             return;
         } else if (dest.getScheme().equalsIgnoreCase("any")) {

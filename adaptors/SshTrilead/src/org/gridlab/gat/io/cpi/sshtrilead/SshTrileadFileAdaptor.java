@@ -254,6 +254,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
     
     private HostKeyVerifier verifier;
 
+    private boolean isLocal;
+
     public SshTrileadFileAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException, GATInvocationException {
         super(gatContext, location);
@@ -301,11 +303,12 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 .equalsIgnoreCase("true");
 
         verifier = new HostKeyVerifier(false, strictHostKeyChecking, noHostKeyChecking);
+        isLocal = location.isCompatible("file") && location.refersToLocalHost(); 
     }
 
     public void copy(URI destination) throws GATInvocationException {
         destination = fixURI(destination, null);
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             // put the file
             try {
                 put(destination);
@@ -316,7 +319,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 throw new GATInvocationException("SshTrileadFileAdaptor", e);
             }
         } else {
-            if (destination.refersToLocalHost()) {
+            if (destination.isCompatible("file") && destination.refersToLocalHost()) {
                 // get the file
                 try {
                     get(destination);
@@ -334,7 +337,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     public void safeCopy(URI destination) throws GATInvocationException {
         destination = fixURI(destination, null);
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             // put the file
             try {
                 safePut(destination);
@@ -345,7 +348,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 throw new GATInvocationException("SshTrileadFileAdaptor", e);
             }
         } else {
-            if (destination.refersToLocalHost()) {
+            if (destination.isCompatible("file") && destination.refersToLocalHost()) {
                 // get the file
                 try {
                     safeGet(destination);
@@ -362,7 +365,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     private void put(URI destination) throws Exception {
-        if (destination.refersToLocalHost()) {
+        if (destination.isCompatible("file") && destination.refersToLocalHost()) {
             throw new GATInvocationException("SshTrileadFileAdaptor cannot copy local to local");
         }
         if (! recognizedScheme(destination.getScheme(), getSupportedSchemes())) {
@@ -505,7 +508,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     private void safePut(URI destination) throws Exception {
-        if (destination.refersToLocalHost()) {
+        if (destination.isCompatible("file") && destination.refersToLocalHost()) {
             throw new GATInvocationException("SshTrileadFileAdaptor cannot copy local to local");
         }
         if (! recognizedScheme(destination.getScheme(), getSupportedSchemes())) {
@@ -1345,7 +1348,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 return canWriteCache.get(fixedURI);           
             }
         }
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             boolean canwrite = f.canWrite();
             if (canWriteCacheEnable) {
@@ -1374,7 +1377,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         if (exists()) {
             return false;
         }
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             return createNewFile(fixedURI.getPath(), getMode(gatContext, DEFAULT_MODE));
         }
     
@@ -1408,7 +1411,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 existsCache.remove(fixedURI);
             }
         }
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             try {
                 return f.delete();
@@ -1438,7 +1441,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
             }
         }
  
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             try {
                 boolean result = f.exists();
@@ -1485,7 +1488,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public String getAbsolutePath() throws GATInvocationException {
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             return f.getAbsolutePath();
         }
@@ -1516,7 +1519,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 return isDirCache.get(fixedURI);
             }
         }
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             boolean isDir = f.isDirectory();
             if (isDirCacheEnable) {
@@ -1559,7 +1562,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 return isFileCache.get(fixedURI);
             }
         }
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             boolean isFile = f.isFile();
             if (isFileCacheEnable) {
@@ -1594,7 +1597,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public long length() throws GATInvocationException {
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             return f.length();
         }
@@ -1624,7 +1627,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 return listCache.get(fixedURI);
             }
         }
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             String[] l = f.list();
             if (listCacheEnable) {
@@ -1678,7 +1681,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public boolean mkdir() throws GATInvocationException {
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             return f.mkdir();
         }
@@ -1705,7 +1708,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public boolean mkdirs() throws GATInvocationException {
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             return f.mkdirs();
         }
@@ -1804,7 +1807,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
 	if (! exists()) {
 	    return false;
 	}
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             return f.setLastModified(lastModified);
         }
@@ -1824,7 +1827,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public long lastModified() throws GATInvocationException {
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             return f.lastModified();
         }
@@ -1855,7 +1858,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public boolean setReadOnly() throws GATInvocationException {
-        if (fixedURI.refersToLocalHost()) {
+        if (isLocal) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             return f.setReadOnly();
         }

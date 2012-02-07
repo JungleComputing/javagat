@@ -82,7 +82,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
 
     String srcProvider;
 
-    private boolean localFile = false;
+    boolean localFile = false;
 
     /**
      * Creates new GAT GT4 file object. The constructor is called by the
@@ -102,14 +102,11 @@ abstract public class GT4FileAdaptor extends FileCpi {
     public GT4FileAdaptor(GATContext gatContext, URI location, String prov)
             throws GATObjectCreationException {
         super(gatContext, location);
+        localFile = location.isCompatible("file") && location.refersToLocalHost();
         if (prov.equals("local")) {
             if (!location.isCompatible("file")) {
                 throw new AdaptorNotApplicableException(
                         "cannot handle this URI: " + location);
-            }
-        } else if (prov.equals("gsiftp")) {
-            if (location.isCompatible("file") && location.refersToLocalHost()) {
-                localFile = true;
             }
         }
 

@@ -155,10 +155,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (pre != null) {
             for (int i = 0; i < pre.size(); i++) {
                 PreStagedFile f = pre.getFile(i);
+                URI uri = f.getResolvedSrc().toGATURI();
 
-                if (!f.getResolvedSrc().toGATURI().refersToLocalHost()) {
+                if (! uri.isCompatible("file") || ! uri.refersToLocalHost()) {
                     rsl += " (file_stage_in = (gsiftp://"
-                            + f.getResolvedSrc().toGATURI().getHost() + "/"
+                            + uri.getHost() + "/"
                             + f.getResolvedSrc().getPath() + " "
                             + f.getResolvedDest().getPath() + "))";
                 } else {
@@ -173,11 +174,12 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (post != null) {
             for (int i = 0; i < post.size(); i++) {
                 PostStagedFile f = post.getFile(i);
-
-                if (!f.getResolvedSrc().toGATURI().refersToLocalHost()) {
+                URI uri = f.getResolvedSrc().toGATURI();
+                
+                if (! uri.isCompatible("file") || ! uri.refersToLocalHost()) {
                     rsl += " (file_stage_out = ("
                             + f.getResolvedDest().getPath() + " " + "gsiftp://"
-                            + f.getResolvedSrc().toGATURI().getHost() + "/"
+                            + uri.getHost() + "/"
                             + f.getResolvedSrc().getPath() + "))";
                 } else {
                     rsl += " (file_stage_out = ("

@@ -86,7 +86,7 @@ public class ZorillaJob extends JobCpi {
 
         URI uri = src.toGATURI();
 
-        if (!uri.refersToLocalHost()) {
+        if ((! uri.isCompatible("file") || uri.isCompatible("local")) || !uri.refersToLocalHost()) {
             throw new GATInvocationException(
                     "Zorilla can only handle local files as input");
         }

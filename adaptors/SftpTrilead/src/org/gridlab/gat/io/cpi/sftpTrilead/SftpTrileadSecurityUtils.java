@@ -57,7 +57,7 @@ class SftpTrileadContextCreator implements SecurityContextCreator {
             if (c.getPassword() != null) {
                 info.password = c.getPassword();
             }
-            if (c.getKeyfile() != null && c.getKeyfile().refersToLocalHost()) {
+            if (c.getKeyfile() != null && c.getKeyfile().isCompatible("file") && c.getKeyfile().refersToLocalHost()) {
                 info.privateKey = new java.io.File(c.getKeyfile().getPath());
             } else {
                 info.privateKey = SftpTrileadSecurityUtils.getDefaultPrivateKey();

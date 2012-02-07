@@ -28,7 +28,7 @@ public class SrcToLocalToDestCopyFileAdaptor extends FileCpi {
 
     public SrcToLocalToDestCopyFileAdaptor(GATContext gatContext, URI location) throws GATObjectCreationException {
         super(gatContext, location);
-        if (toURI().refersToLocalHost()) {
+        if (toURI().isCompatible("file") && toURI().refersToLocalHost()) {
             throw new GATObjectCreationException(
                     "SrcToLocalToDestCopyFileAdaptor can only be used for remote files");
         }
@@ -41,7 +41,7 @@ public class SrcToLocalToDestCopyFileAdaptor extends FileCpi {
      */
     public void copy(URI dest) throws GATInvocationException {
 	// Specific adaptors should implement the "copy to local".
-	if (dest.refersToLocalHost()) {
+	if (dest.isCompatible("file") && dest.refersToLocalHost()) {
             throw new GATInvocationException(
                     "SrcToLocalToDestCopyFileAdaptor destination refers to localhost");
         }

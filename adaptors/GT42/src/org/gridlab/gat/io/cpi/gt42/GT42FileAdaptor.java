@@ -76,7 +76,7 @@ abstract public class GT42FileAdaptor extends FileCpi {
 
     String srcProvider;
 
-    private boolean localFile = false;
+    boolean localFile = false;
 
     static final int DEFAULT_GRIDFTP_PORT = 2811;
 
@@ -108,10 +108,10 @@ abstract public class GT42FileAdaptor extends FileCpi {
                 throw new AdaptorNotApplicableException(
                         "cannot handle this URI: " + location);
             }
-        } else if (prov.equals("gsiftp")) {
-            if (location.isCompatible("file") && location.refersToLocalHost()) {
-                localFile = true;
-            }
+        }
+
+        if (location.isCompatible("file") && location.refersToLocalHost()) {
+            localFile = true;
         }
 
         srcProvider = prov;

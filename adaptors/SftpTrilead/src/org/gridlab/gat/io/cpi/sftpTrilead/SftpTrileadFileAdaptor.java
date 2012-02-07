@@ -97,6 +97,8 @@ public class SftpTrileadFileAdaptor extends FileCpi {
     private boolean tcpNoDelay;
     
     private URI fixedURI;
+
+    private boolean localFile;
     
     public static void end() {
 	Collection<SftpTrileadConnection> connections = clienttable.values();
@@ -130,6 +132,9 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         
         verifier = new SftpTrileadHostVerifier(false, strictHostKeyChecking, noHostKeyChecking);
         fixedURI = fixURI(location, null);
+        if (fixedURI.isCompatible("file") && fixedURI.refersToLocalHost()) {
+            localFile = true;
+        }
     }
 
     private static String getClientKey(URI hostURI, Preferences prefs) {
@@ -409,7 +414,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#isDirectory()
      */
     public boolean isDirectory() throws GATInvocationException {
-        if (fixedURI.refersToLocalHost()) {
+        if (localFile) {
             java.io.File f = new java.io.File(location.getPath());
             boolean isDir = f.isDirectory();
             return isDir;
@@ -502,7 +507,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      */
     public String[] list() throws GATInvocationException {
 	
-        if (fixedURI.refersToLocalHost()) {
+        if (localFile) {
             java.io.File f = new java.io.File(fixedURI.getPath());
             String[] l = f.list();
             return l;
@@ -547,11 +552,12 @@ public class SftpTrileadFileAdaptor extends FileCpi {
     }
     
     public void move(URI dest) throws GATInvocationException {
+        boolean destIsLocal = dest.isCompatible("file") && dest.refersToLocalHost();
         URI uri = toURI();
         if (logger.isDebugEnabled()) {
             logger.debug("move " + uri + " " + dest);
         }
-        if (! uri.refersToLocalHost() && ! dest.refersToLocalHost()) {
+        if (! localFile && ! destIsLocal) {
             if (uri.getScheme().equals(dest.getScheme()) &&
                     uri.getAuthority().equals(dest.getAuthority())) {
                 try {
@@ -577,13 +583,13 @@ public class SftpTrileadFileAdaptor extends FileCpi {
                 }
             }
         }
-        if (uri.refersToLocalHost() && ! dest.refersToLocalHost()) {
+        if (localFile && ! destIsLocal) {
             if (recognizedScheme(dest.getScheme(), getSupportedSchemes())) {
                 super.move(dest);
                 return;
             }
         }
-        if (! uri.refersToLocalHost() && dest.refersToLocalHost()) {
+        if (! localFile && destIsLocal) {
             super.move(dest);
             return;
         }
@@ -610,11 +616,12 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#copy(java.net.URI)
      */
     public void safeCopy(URI dest) throws GATInvocationException {
+        boolean destIsLocal = dest.isCompatible("file") && dest.refersToLocalHost();
         URI uri = toURI();
-        if (uri.refersToLocalHost()) {
+        if (localFile) {
             // We don't have to handle the local case, the GAT engine will select
             // the local adaptor.
-            if (dest.refersToLocalHost()) {
+            if (destIsLocal) {
                 throw new GATInvocationException(
                         "sftpTrilead cannot copy local files");
             }
@@ -630,7 +637,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             throw new GATInvocationException("sftptrilead: remote scheme not recognized: " + dest.getScheme());
         }
        
-        if (dest.refersToLocalHost()) {
+        if (destIsLocal) {
             copyToLocal(fixURI(uri, null), fixURI(dest, null));
             return;
         }
@@ -644,11 +651,12 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#copy(java.net.URI)
      */
     public void copy(URI dest) throws GATInvocationException {
+        boolean destIsLocal = dest.isCompatible("file") && dest.refersToLocalHost();
         URI uri = toURI();
-        if (uri.refersToLocalHost()) {
+        if (localFile) {
             // We don't have to handle the local case, the GAT engine will select
             // the local adaptor.
-            if (dest.refersToLocalHost()) {
+            if (destIsLocal) {
                 throw new GATInvocationException(
                         "sftpTrilead cannot copy local files");
             }
@@ -672,7 +680,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             throw new GATInvocationException("sftptrilead: remote scheme not recognized: " + dest.getScheme());
         }
        
-        if (dest.refersToLocalHost()) {
+        if (destIsLocal) {
             SFTPv3FileAttributes a = getAttrs();
             if (a == null) {
                 throw new GATInvocationException("sftptrilead: file does not exist");

@@ -84,7 +84,7 @@ public class SshTrileadFileOutputStreamAdaptor extends FileOutputStreamCpi {
                     GATInvocationException {
         super(gatContext, location, append);
         
-        if (location.refersToLocalHost()) {
+        if (location.isCompatible("file") && location.refersToLocalHost()) {
             throw new GATObjectCreationException("this adaptor cannot write local files");
         }
         

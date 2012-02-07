@@ -209,7 +209,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
          * Don't try to get the credential if we are dealing with a local file.
          * In that case, getting the credential here is too expensive.
          */
-        if (location.isCompatible("file") && location.refersToLocalHost()) {
+        if (localFile) {
             return;
         }
         /*
@@ -229,8 +229,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     }
     
     public void move(URI dest) throws GATInvocationException {
+        boolean destIsLocal = dest.isCompatible("file") && dest.refersToLocalHost();
         URI uri = toURI();
-        if (! uri.refersToLocalHost() && ! dest.refersToLocalHost()) {
+        if (! localFile && ! destIsLocal) {
             if (uri.getScheme().equals(dest.getScheme()) &&
                     uri.getAuthority().equals(dest.getAuthority())) {
                 FTPClient client = null;
@@ -259,13 +260,13 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                 }
             }
         }
-        if (uri.refersToLocalHost() && ! dest.refersToLocalHost()) {
+        if (localFile && ! destIsLocal) {
             if (recognizedScheme(dest.getScheme(), getSupportedSchemes())) {
                 super.move(dest);
                 return;
             }
         }
-        if (! uri.refersToLocalHost() && dest.refersToLocalHost()) {
+        if (! localFile && destIsLocal) {
             super.move(dest);
             return;
         }

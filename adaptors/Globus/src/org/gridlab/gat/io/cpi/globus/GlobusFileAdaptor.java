@@ -109,6 +109,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
     
     static final EmptySource emptySource = new EmptySource();
+    
+    boolean localFile = false;
 
     /**
      * Constructs a LocalFileAdaptor instance which corresponds to the physical
@@ -129,6 +131,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         cachedInfo = (FileInfo) gatContext.getPreferences().get(
                 "GAT_INTERNAL_FILE_INFO");
         gatContext.getPreferences().remove("GAT_INTERNAL_FILE_INFO");
+        if (toURI().isCompatible("file") && toURI().refersToLocalHost()) {
+            localFile = true;
+        }
     }
 
     static protected boolean isPassive(Preferences preferences) {
@@ -196,7 +201,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#copy(java.net.URI)
      */
     public void copy(URI dest) throws GATInvocationException {
-        if (toURI().refersToLocalHost() && dest.refersToLocalHost()) {
+        boolean destIsLocal = dest.isCompatible("file") && dest.refersToLocalHost();
+        if (localFile && destIsLocal) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Globus file: copy local to local");
             }
@@ -209,7 +215,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             return;
         }
 
-        if (dest.refersToLocalHost()) {
+        if (destIsLocal) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Globus file: copy remote to local");
             }
@@ -219,7 +225,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             return;
         }
         
-        if (toURI().refersToLocalHost()) {
+        if (localFile) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Globus file: copy local to remote");
             }
@@ -1125,7 +1131,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         // is a directory. This is needed, because the source might be a local
         // file, and some adaptors might not work locally (like gridftp).
         // This goes wrong for local -> remote copies.
-        if (toURI().refersToLocalHost()) {
+        if (localFile) {
             try {
                 java.io.File f = new java.io.File(getPath());
                 boolean res = f.isDirectory();

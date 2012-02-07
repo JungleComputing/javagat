@@ -72,7 +72,7 @@ public class SftpTrileadRandomAccessFileAdaptor extends RandomAccessFileCpi {
         
 //      We don't have to handle the local case, the GAT engine will select
 //      the local adaptor.
-        if (location.refersToLocalHost()) {
+        if (location.isCompatible("file") && location.refersToLocalHost()) {
             throw new GATObjectCreationException(
             "this adaptor cannot deal with local files");
         }

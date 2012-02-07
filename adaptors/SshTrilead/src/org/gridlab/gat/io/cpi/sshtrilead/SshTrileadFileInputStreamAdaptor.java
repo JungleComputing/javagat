@@ -74,7 +74,7 @@ public class SshTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
     public SshTrileadFileInputStreamAdaptor(GATContext gatContext, URI location) throws GATObjectCreationException, GATInvocationException {
         super(gatContext, location);
         
-        if (location.refersToLocalHost()) {
+        if (location.isCompatible("file") && location.refersToLocalHost()) {
             throw new AdaptorNotApplicableException("this adaptor cannot read local files");
         }
         
