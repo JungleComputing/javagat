@@ -26,7 +26,7 @@ public class LfnFileCopy {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception{
-        String lfnroot = "lfn:///grid/pvier/ceriel/";
+        String lfnroot = "lfn:/grid/pvier/ceriel/";
 
         // Create a new CertificateSecurityContext containing the globus certificates
         // and the user password.
