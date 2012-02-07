@@ -324,8 +324,13 @@ public class RFTGT42FileAdaptor extends FileCpi {
     }
 
     public String URItoRFTGT42String(URI in) throws URISyntaxException {
-        URI fixedPath = in.setPath(in.getPath().substring(1));
-        String rftgt42String = fixURI(fixedPath, "gsiftp").toString();
+        if (in.isAbsolute()) {
+            if (! in.hasAbsolutePath()) {
+                throw new GATInvocationException("Cannot deal with relative paths in absolute URIs");
+            }
+            in = in.setPath(in.getPath().substring(1));
+        }
+        String rftgt42String = fixURI(in, "gsiftp").toString();
         if (fixedPath.getHost() == null) {
             rftgt42String = rftgt42String.replace("gsiftp:", "gsiftp://"
                     + getLocalHost());

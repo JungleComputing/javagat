@@ -227,6 +227,8 @@ public class RFTGT4FileAdaptor extends FileCpi {
         } catch (URISyntaxException e) {
             throw new GATObjectCreationException(
                     "unable to create a valid rft URI: " + location, e);
+        } catch(GATInvocationException e) {
+            throw new GATObjectCreationException("Cannot deal with relative paths in absolute URI's", e);
         }
 
         this.host = location.getHost();
@@ -280,10 +282,15 @@ public class RFTGT4FileAdaptor extends FileCpi {
                         .toString());
     }
 
-    public String URItoRFTGT4String(URI in) throws URISyntaxException {
-        URI fixedPath = in.setPath(in.getPath().substring(1));
-        String rftgt4String = fixURI(fixedPath, "gsiftp").toString();
-        if (fixedPath.getHost() == null) {
+    public String URItoRFTGT4String(URI in) throws URISyntaxException, GATInvocationException {
+        if (in.isAbsolute()) {
+            if (! in.hasAbsolutePath()) {
+                throw new GATInvocationException("Cannot deal with relative paths in absolute URIs");
+            }
+            in = in.setPath(in.getPath().substring(1));
+        }
+        String rftgt4String = fixURI(in, "gsiftp").toString();
+        if (in.getHost() == null) {
             rftgt4String = rftgt4String.replace("gsiftp:", "gsiftp://"
                     + getLocalHost());
         }
