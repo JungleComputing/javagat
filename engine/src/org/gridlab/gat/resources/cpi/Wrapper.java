@@ -268,7 +268,7 @@ public class Wrapper {
         if (preStaged != null) {
             ArrayList<File> keys = new ArrayList<File>(preStaged.keySet());
             for (File file : keys) {
-                if (file.toGATURI().refersToLocalHost()) {
+                if (file.toGATURI().isCompatible("file") && file.toGATURI().refersToLocalHost()) {
                     File target = preStaged.get(file);
                     preStaged.remove(file);
                     try {

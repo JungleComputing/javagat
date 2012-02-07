@@ -867,7 +867,7 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
         // is a directory. This is needed, because the source might be a local
         // file, and some adaptors might not work locally (like gridftp).
         // This goes wrong for local -> remote copies.
-        if (toURI().refersToLocalHost()) {
+        if ((toURI().isCompatible("file") || toURI().isCompatible("local")) && toURI().refersToLocalHost()) {
             try {
                 java.io.File f = new java.io.File(getPath());
                 return f.isDirectory();
