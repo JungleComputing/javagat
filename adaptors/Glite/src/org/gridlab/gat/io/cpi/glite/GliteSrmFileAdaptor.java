@@ -117,9 +117,13 @@ public class GliteSrmFileAdaptor extends FileCpi {
                 String turl = connector.getTURLForFileDownload(location);
                 LOGGER.info("SRM/Copy: TURL: " + turl);
                 GATContext newContext = (GATContext) gatContext.clone();
-                newContext.addPreference("File.adaptor.name", "GridFTP");
+                // newContext.addPreference("File.adaptor.name", "GridFTP");
                 GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);
-                File transportFile = GAT.createFile(newContext, turl);
+                // TODO: We have to fix the URI for javagat, since javagat requires an extra '/'.
+                URI uri = new URI(turl);
+                String path = uri.getPath();
+                uri = uri.setPath("/" + path);
+                File transportFile = GAT.createFile(newContext, uri);
                 transportFile.copy(new URI(dest.getPath()));
             }
         } catch (Exception e) {

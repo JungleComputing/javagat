@@ -1,6 +1,7 @@
 package org.gridlab.gat.io.cpi.glite.srm;
 
 import gov.lbl.srm.StorageResourceManager.ArrayOfAnyURI;
+import gov.lbl.srm.StorageResourceManager.ArrayOfString;
 import gov.lbl.srm.StorageResourceManager.ArrayOfTGetFileRequest;
 import gov.lbl.srm.StorageResourceManager.ArrayOfTGroupPermission;
 import gov.lbl.srm.StorageResourceManager.ArrayOfTPutFileRequest;
@@ -35,6 +36,7 @@ import gov.lbl.srm.StorageResourceManager.TPutRequestFileStatus;
 import gov.lbl.srm.StorageResourceManager.TReturnStatus;
 import gov.lbl.srm.StorageResourceManager.TSURLReturnStatus;
 import gov.lbl.srm.StorageResourceManager.TStatusCode;
+import gov.lbl.srm.StorageResourceManager.TTransferParameters;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,10 +53,8 @@ import org.apache.axis.client.Stub;
 import org.apache.axis.configuration.SimpleProvider;
 import org.apache.axis.transport.http.HTTPSender;
 import org.apache.axis.types.URI;
-import org.apache.axis.types.UnsignedLong;
 import org.apache.axis.types.URI.MalformedURIException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.axis.types.UnsignedLong;
 import org.globus.axis.gsi.GSIConstants;
 import org.globus.axis.transport.HTTPSSender;
 import org.globus.axis.util.Util;
@@ -68,6 +68,8 @@ import org.gridlab.gat.io.attributes.PosixFilePermission;
 import org.gridlab.gat.io.attributes.UserPrincipal;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Non-GAT specific functionality to connect with SRM v2.
@@ -120,7 +122,7 @@ public class SrmConnection {
         }
         URI wsEndpoint;
         try {
-            wsEndpoint = new URI("httpg", null, host, 8446, "/srm/managerv2",
+            wsEndpoint = new URI("httpg", null, host, 8443, "/srm/managerv2",
                     null, null);
             this.service = locator.getsrm(new URL(wsEndpoint.toString()));
 
@@ -158,7 +160,12 @@ public class SrmConnection {
         LOGGER.info("Creating get request for URI " + uriSpec);
         SrmPrepareToGetRequest srmPrepToGetReq = new SrmPrepareToGetRequest();
         srmPrepToGetReq.setAuthorizationID("SRMClient");
-
+        TTransferParameters params = new TTransferParameters();
+        ArrayOfString a = new ArrayOfString();
+        a.setStringArray(new String[] { "gsiftp" });
+        params.setArrayOfTransferProtocols(a);
+        srmPrepToGetReq.setTransferParameters(params);
+        
         // don't check out ANY directories
         // TDirOption dirOpt = new TDirOption(Boolean.FALSE, false, new
         // Integer(0));
@@ -191,7 +198,7 @@ public class SrmConnection {
         statusRequest.setRequestToken(requestToken);
         statusRequest.setArrayOfSourceSURLs(new ArrayOfAnyURI(new URI[] { uri }));
         
-        if ( !status.getStatusCode().equals( TStatusCode.SRM_REQUEST_QUEUED ) ) {
+        if ( !status.getStatusCode().equals( TStatusCode.SRM_REQUEST_QUEUED ) && ! status.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
         	String log= "Status: " + status.getStatusCode()+
     		"\n"+"Status exp: " + status.getExplanation()+
     		"\n"+"FileStatus: " + fileStatus.getStatus().getStatusCode()+
@@ -199,28 +206,30 @@ public class SrmConnection {
         	throw new IOException("SRM Get Request error: "+log);
         }
 
-        int retryCount = 0;
-        do {
-        	if(retryCount > 0){
-	        	try {
-	                Thread.sleep(period * retryCount);
-	            } catch (InterruptedException e) {}
-            }
-        	SrmStatusOfGetRequestResponse statusResponse = service.srmStatusOfGetRequest(statusRequest);
-            status = statusResponse.getReturnStatus();
-            fileStatus = statusResponse.getArrayOfFileStatuses().getStatusArray(0);
+        if (! status.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
+            int retryCount = 0;
+            do {
+                if(retryCount > 0){
+                    try {
+                        Thread.sleep(period * retryCount);
+                    } catch (InterruptedException e) {}
+                }
+                SrmStatusOfGetRequestResponse statusResponse = service.srmStatusOfGetRequest(statusRequest);
+                status = statusResponse.getReturnStatus();
+                fileStatus = statusResponse.getArrayOfFileStatuses().getStatusArray(0);
 
-            String log= "Status: " + status.getStatusCode()+
-            		"\n"+"Status exp: " + status.getExplanation()+
-            		"\n"+"FileStatus: " + fileStatus.getStatus().getStatusCode()+
-            		"\n"+"FileStatus exp: "+ fileStatus.getStatus().getExplanation();
-            		
-            LOGGER.info(log);
-        	
-            retryCount++;
-		} while ((!( status.getStatusCode().equals( TStatusCode.SRM_DONE ) || status.getStatusCode().equals( TStatusCode.SRM_SUCCESS ))) 
-				&& retryCount <= MAX_SRM_REQUEST_TRY);
-        
+                String log= "Status: " + status.getStatusCode()+
+                        "\n"+"Status exp: " + status.getExplanation()+
+                        "\n"+"FileStatus: " + fileStatus.getStatus().getStatusCode()+
+                        "\n"+"FileStatus exp: "+ fileStatus.getStatus().getExplanation();
+
+                LOGGER.info(log);
+
+                retryCount++;
+            } while ((!( status.getStatusCode().equals( TStatusCode.SRM_DONE ) || status.getStatusCode().equals( TStatusCode.SRM_SUCCESS ))) 
+                    && retryCount <= MAX_SRM_REQUEST_TRY);
+        }
+
         if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
             if (TStatusCode.SRM_FILE_PINNED.equals(fileStatus.getStatus().getStatusCode())) {
                 transportURL = fileStatus.getTransferURL().toString();
