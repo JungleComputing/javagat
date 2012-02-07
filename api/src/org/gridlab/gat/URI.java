@@ -214,13 +214,14 @@ public class URI implements Serializable, Comparable<Object> {
      * @return true if the URI refers to the localhost, false otherwise
      */
     public boolean refersToLocalHost() {
-	String host = u.getHost();
-        if (host == null) {
-            return true;
-        }
 
         if (u.getPort() != -1) {
             return false;
+        }
+        
+        String host = u.getHost();
+        if (host == null) {
+            return true;
         }
 
         if (host.equals("localhost")) {
@@ -279,7 +280,7 @@ public class URI implements Serializable, Comparable<Object> {
             return null;
         }
 
-        if (u.getHost() != null && refersToLocalHost()) {
+        if (u.getHost() != null && isCompatible("file") && refersToLocalHost()) {
             if (!path.startsWith("/")) {
                 // a relative path for a URI that has a hostname that is the
                 // local host
