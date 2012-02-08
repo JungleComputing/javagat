@@ -236,8 +236,14 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
      * 
      */
     public void copy(URI dest) throws GATInvocationException {
-        if (dest.refersToLocalHost() && location.refersToLocalHost()) {
-            throw new GATInvocationException("local-->local copy not implemented by GT4 adaptor");
+        boolean destIsLocal = dest.isCompatible("file") && dest.refersToLocalHost();
+        if (localFile) {
+            if (destIsLocal) {
+                throw new GATInvocationException("Local-to-local copy not implemented");
+            }
+        }
+        if (! destIsLocal && (dest.getScheme() == null || ! recognizedScheme(dest.getScheme(), getSupportedSchemes()))) {
+            throw new GATInvocationException("GT4FileAdaptor: cannot handle this URI " + dest);
         }
         if (! exists()) {
             throw new GATInvocationException(

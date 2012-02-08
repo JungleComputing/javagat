@@ -204,6 +204,8 @@ public class RFTGT4FileAdaptor extends FileCpi {
 
     ReliableFileTransferFactoryPortType factoryPort;
 
+    private boolean localFile;
+
     /**
      * Creates new GAT RFTGT4 file object.
      * 
@@ -215,7 +217,9 @@ public class RFTGT4FileAdaptor extends FileCpi {
     public RFTGT4FileAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException {
         super(gatContext, location);
-
+        if (toURI().isCompatible("file") && toURI().refersToLocalHost()) {
+            localFile = true;
+        }
         // TODO: may be it is possible on the local host...
         if (!location.hasAbsolutePath()) {
             throw new AdaptorNotApplicableException(
@@ -320,6 +324,16 @@ public class RFTGT4FileAdaptor extends FileCpi {
 
     public void copy(URI dest) throws GATInvocationException {
         // System.out.println("\ncopy " + location + " -> " + dest);
+        boolean destIsLocal = dest.isCompatible("file") && dest.refersToLocalHost();
+        if (localFile) {
+            if (destIsLocal) {
+                throw new GATInvocationException("Local-to-local copy not implemented");
+            }
+        }
+        if (! destIsLocal && (dest.getScheme() == null || ! recognizedScheme(dest.getScheme(), getSupportedSchemes()))) {
+            throw new GATInvocationException("RFTGT4FileAdaptor: cannot handle this URI " + dest);
+        }
+        
         try {
             if (!copy2(URItoRFTGT4String(dest))) {
                 throw new GATInvocationException(
@@ -332,7 +346,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
         }
     }
 
-    public void subscribe(ReliableFileTransferPortType rft)
+    protected void subscribe(ReliableFileTransferPortType rft)
             throws GATInvocationException {
         Map<Object, Object> properties = new HashMap<Object, Object>();
         properties.put(ServiceContainer.CLASS,
@@ -545,6 +559,9 @@ public class RFTGT4FileAdaptor extends FileCpi {
     }
 
     public boolean delete() throws GATInvocationException {
+        if (localFile) {
+            super.delete();
+        }
 
         boolean result = delete2();
         // try recursive directory deletion

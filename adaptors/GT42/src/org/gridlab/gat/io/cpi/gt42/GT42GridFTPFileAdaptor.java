@@ -186,6 +186,10 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
      * @throws GATInvocationException
      */
     protected void copyToRemote(URI dest) throws GATInvocationException {
+        if (dest.getScheme() == null || ! recognizedScheme(dest.getScheme(), getSupportedSchemes())) {
+            throw new GATInvocationException("GT42FileAdaptor: Cannot handle this URI "
+                    + dest);
+        }
        
     	FileResource remoteResource = null;
         try {
