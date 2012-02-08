@@ -85,40 +85,48 @@ public class GliteSrmFileAdaptor extends FileCpi {
         
         this.connector = new SrmConnector(GliteSecurityUtils.getProxyPath(gatContext));        
         
-        LOGGER.info("Instantiated gLiteSrmFileAdaptor for " + location);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Instantiated gLiteSrmFileAdaptor for " + location);
+        }
     }
 
     /** {@inheritDoc} */
     public void copy(URI dest) throws GATInvocationException {
         try {
+            GATContext newContext = (GATContext) gatContext.clone();
+            newContext.addPreference("File.adaptor.name", "GridFTP");
+            newContext.addPreference("ftp.server.noauthentication", "true");
+            GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);
             if (localFile) {
-                if (!dest.isCompatible(GliteSrmFileAdaptor.SRM_PROTOCOL)) {
+                if (dest.getScheme() == null || ! recognizedScheme(dest.getScheme(), getSupportedSchemes())) {
                     throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR
                             + ": " + GliteSrmFileAdaptor.CANNOT_HANDLE_THIS_URI
                             + dest);
                 }
+
                 @SuppressWarnings("unused")
                 String proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);
-                LOGGER.info("SRM/Copy: Uploading " + location + " to " + dest);
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("SRM/Copy: Uploading " + location + " to " + dest);
+                }
                 String turl = connector.getTURLForFileUpload(location, dest);
-                LOGGER.info("SRM/Copy: TURL: " + turl);
-                GATContext newContext = (GATContext) gatContext.clone();
-                newContext.addPreference("File.adaptor.name", "gridftp");
-                GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("SRM/Copy: TURL: " + turl);
+                }
                 File transportFile = GAT.createFile(newContext, location);
                 transportFile.copy(new URI(turl));
                 connector.finalizeFileUpload(dest);
             } else {
                 @SuppressWarnings("unused")
                 String proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);
-                LOGGER
-                        .info("SRM/Copy: Downloading " + location + " to "
-                                + dest);
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("SRM/Copy: Downloading " + location
+                            + " to " + dest);
+                }
                 String turl = connector.getTURLForFileDownload(location);
-                LOGGER.info("SRM/Copy: TURL: " + turl);
-                GATContext newContext = (GATContext) gatContext.clone();
-                newContext.addPreference("File.adaptor.name", "GridFTP");
-                GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("SRM/Copy: TURL: " + turl);
+                }
                 // We have to fix the URI for javagat, since javagat requires an extra '/'.
                 URI uri = new URI(turl);
                 String path = uri.getPath();

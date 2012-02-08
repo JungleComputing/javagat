@@ -156,8 +156,10 @@ public class LDAPResourceFinder {
             }
             if (wmsServer != null) {
                 wmsServers.add(wmsServer);
-                LOGGER.info("Retrieved the following WMS server from LDAP: "
-                        + wmsServer);
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("Retrieved the following WMS server from LDAP: "
+                            + wmsServer);
+                }
             }
         }
 
@@ -184,7 +186,9 @@ public class LDAPResourceFinder {
         while (clusters.hasMore()) {
             SearchResult result = clusters.nextElement();
             String ceURL = getSafeStringAttr(result, "GlueCEInfoContactString");
-            LOGGER.info("Retrieved the following CE from LDAP: " + ceURL);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("Retrieved the following CE from LDAP: " + ceURL);
+            }
             if (ceURL != null)
                 results.add(ceURL);
         }
@@ -213,13 +217,15 @@ public class LDAPResourceFinder {
             SearchResult result = searchResults.nextElement();
             String endpoint = getSafeStringAttr(result, "GlueServiceEndpoint");
             results.add(endpoint);
-            LOGGER.info("Retrieved the following LFC from LDAP: " + endpoint);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("Retrieved the following LFC from LDAP: " + endpoint);
+            }
         }
         return results;
     }
 
     /**
-     * Contains information about a storage elmenet (SE).
+     * Contains information about a storage element (SE).
      */
     public class SEInfo {
         final String seUniqueId;
@@ -319,6 +325,9 @@ public class LDAPResourceFinder {
 
         while (searchResults.hasMore()) {
             final SearchResult result = searchResults.nextElement();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("searchresult: " + result.toString());
+            }
             String pathName = result.getName();
             String seUniqueId = null;
             int pos = pathName.indexOf("GlueSEUniqueID");
@@ -346,9 +355,12 @@ public class LDAPResourceFinder {
 
             if (seUniqueId != null) {
                 boolean valid;
-                valid = Long.parseLong(space) > fileSize;
-                LOGGER.debug("Found SE: " + seUniqueId + " with path " + path
-                        + " and space " + space + " Valid: " + valid);
+                valid = space == null || Long.parseLong(space) > fileSize;
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Found SE: " + seUniqueId + " with path " + path
+                            + " and space " + (space == null ? "not specified" : space)
+                            + " Valid: " + valid);
+                }
                 if (valid) {
                     results.add(new SEInfo(seUniqueId, path, space));
                 }
