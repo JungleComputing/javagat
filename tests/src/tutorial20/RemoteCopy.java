@@ -15,9 +15,7 @@ public class RemoteCopy {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-	        Preferences prefs = new Preferences();
-	        prefs.put("File.adaptor.name", "GridFTP");
-		GAT.createFile(prefs, args[0]).copy(new URI(args[1]));
+		GAT.createFile(args[0]).copy(new URI(args[1]));
 		GAT.end();
 	}
 }
