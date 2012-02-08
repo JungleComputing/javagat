@@ -9,6 +9,10 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.security.CertificateSecurityContext;
 
+// Test to copy a file from and to the SE storage.
+// You probably need to change the lfnroot and context to run this,
+// as these are now set for me.
+//
 public class LfnFileCopy {
     // Ask the user for the password needed to perform grid-proxy-init
     private static String getPassphrase() {
@@ -45,13 +49,18 @@ public class LfnFileCopy {
         context.addPreference("vomsHostDN", "/O=dutchgrid/O=hosts/OU=sara.nl/CN=voms.grid.sara.nl");
         context.addPreference("LfcServer", "lfc.grid.sara.nl");
         context.addPreference("bdiiURI", "ldap://bdii.grid.sara.nl:2170");
+        // context.addPreference("ftp.connection.passive", "false");
+        // context.addPreference("ftp.server.noauthentication", "true");
+        // context.addPreference("gridftp.authenticate.retry", "5");
+
 //        context.addPreference("preferredSEID", "srm.grid.sara.nl");
 
         GAT.setDefaultGATContext(context);
 
         File exampleFile = GAT.createFile(lfnroot + "text.txt");
         exampleFile.copy(new URI("localtext.txt"));
-
+        File exampleFile2 = GAT.createFile("localtext.txt");
+        exampleFile2.copy(new URI(lfnroot + "data"));
 
         GAT.end();
 	}
