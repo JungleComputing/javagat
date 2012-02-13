@@ -275,11 +275,11 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
 		job.addOption("S", "/bin/sh");
 
 		String nativeFlags = null;
-		Object o = rd.getResourceAttribute(SSHSGE_NATIVE_FLAGS);
+		Object o = rd == null ? null : rd.getResourceAttribute(SSHSGE_NATIVE_FLAGS);
 		if (o != null && o instanceof String) {
 		    nativeFlags = (String) o;
 		} else {
-		    String s = sd.getStringAttribute(SSHSGE_NATIVE_FLAGS, null);
+		    String s = sd == null ? null : sd.getStringAttribute(SSHSGE_NATIVE_FLAGS, null);
 		    if (s != null) {
 			    nativeFlags = s;
 		    } else {

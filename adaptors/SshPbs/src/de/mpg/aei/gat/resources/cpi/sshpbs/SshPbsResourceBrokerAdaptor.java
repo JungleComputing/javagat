@@ -291,11 +291,11 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
 		}
 		
 		String nativeFlags = null;
-		Object o = rd.getResourceAttribute(SSHPBS_NATIVE_FLAGS);
+		Object o = rd == null ? null : rd.getResourceAttribute(SSHPBS_NATIVE_FLAGS);
 		if (o != null && o instanceof String) {
 		    nativeFlags = (String) o;
 		} else {
-		    String s = sd.getStringAttribute(SSHPBS_NATIVE_FLAGS, null);
+		    String s = sd == null ? null : sd.getStringAttribute(SSHPBS_NATIVE_FLAGS, null);
 		    if (s != null) {
 			    nativeFlags = s;
 		    } else {
