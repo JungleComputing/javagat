@@ -268,7 +268,7 @@ public class SshSgeJob extends SimpleJobBase implements MetricListener {
             synchronized(job) {
                 while (job.getState() != Job.JobState.STOPPED && job.getState() != Job.JobState.SUBMISSION_ERROR) {
                     try {
-                        wait();
+                        job.wait();
                     } catch(InterruptedException e) {
                         // ignore
                     }
