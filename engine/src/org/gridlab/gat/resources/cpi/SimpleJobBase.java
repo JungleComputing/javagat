@@ -183,7 +183,11 @@ public abstract class SimpleJobBase extends JobCpi {
 		}
 	    }
 	    if (state == JobState.SUBMISSION_ERROR) {
-		logger.error("Job " + jobID + "failed");
+		logger.error("Job " + jobID + " failed");
+		synchronized(this) {
+		    finished = true;
+		    notifyAll();
+		}
 		return;
 	    }
 	    if (state == JobState.STOPPED || state == JobState.POST_STAGING) {
