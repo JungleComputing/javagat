@@ -309,6 +309,7 @@ public class SshPbsJob extends SimpleJobBase implements MetricListener {
             sd.setArguments(jobID);
             sd.addAttribute(SoftwareDescription.SANDBOX_USEROOT, "true");
             sd.addAttribute(SoftwareDescription.SANDBOX_ROOT, sandbox.getSandboxPath());
+            sd.addAttribute(SoftwareDescription.STOP_ON_EXIT, "false");
             JobDescription jd = new JobDescription(sd);
             Job job = jobHelper.submitJob(jd, this, "job.status");
             synchronized(job) {
