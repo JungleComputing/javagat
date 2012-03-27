@@ -112,6 +112,14 @@ public class SshTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
     public boolean markSupported() {
         return sessionOutputStream.markSupported();
     }
+    
+    public int available() throws GATInvocationException {
+        try {
+            return sessionOutputStream.available();
+        } catch(IOException e) {
+            throw new GATInvocationException("got exception", e);
+        }
+    }
 
     public int read() throws GATInvocationException {
         try {
