@@ -135,20 +135,25 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 			final MessageElement[] entries = response.get_any();
 			MessageElement messageElement;
 
-			for (int ii = 0; ii < entries.length; ++ii) {
-				messageElement = entries[ii];
-
-				if (messageElement == null) {
-					LOGGER.trace("Entry is null!");
-					continue;
+			if (entries != null) {
+				for (int ii = 0; ii < entries.length; ++ii) {
+					messageElement = entries[ii];
+					
+					if (messageElement == null) {
+						LOGGER.trace("Entry is null!");
+						continue;
+					}
+					
+					final EntryType entry = (EntryType) ObjectDeserializer.toObject(messageElement, EntryType.class);
+					queueList.addAll(getJobQueuesFromEntry(entry));
+					
 				}
-
-				final EntryType entry = (EntryType) ObjectDeserializer.toObject(messageElement, EntryType.class);
-				queueList.addAll(getJobQueuesFromEntry(entry));
-
+				LOGGER.debug("Got " + queueList.size() + " queues for mds: " + informationSystemUri.getHost());
+			} else {
+				LOGGER.warn("mds " + informationSystemUri.getHost() + " did not return entires");
 			}
-			LOGGER.debug("Got " + queueList.size() + " queues for mds: " + informationSystemUri.getHost());
 		} catch (Exception e1) {
+			LOGGER.error("Error getting queues from " + getInformationSystemUri().getHost() + ":" + port, e1);
 			throw new GATInvocationException("WSGT4SchedulerAdaptor", e1);
 		}
 
