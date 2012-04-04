@@ -30,7 +30,7 @@
 	<mkdir dir="${lib}" />
 
 	<!-- Compile the java code from ${src} into ${tmp} -->
-	<javac target="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
+	<javac srcdir="${src}" destdir="${tmp}" debug="on">
 	    <classpath refid="external_jars" />
 	</javac>
 
@@ -59,7 +59,7 @@
 	</copy>
 
 	<!-- Compile the java code from ${src} into ${tmp} -->
-	<javac target="1.5" srcdir="${tmp-android}" destdir="${tmp}" debug="on">
+	<javac srcdir="${tmp-android}" destdir="${tmp}" debug="on">
 	    <classpath refid="external_jars" />
 	</javac>
 

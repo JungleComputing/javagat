@@ -27,7 +27,7 @@
 		<mkdir dir="${tmp}" />
 
 		<!-- Compile the java code from ${src} into ${tmp} -->
-		<javac target="1.5" srcdir="${src}" destdir="${tmp}"
+		<javac srcdir="${src}" destdir="${tmp}"
 		    debug="on" deprecation="on">
 		    <classpath refid="external_jars" />
 		</javac>

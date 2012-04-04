@@ -25,7 +25,7 @@
 	<mkdir dir="${lib}" />
 
 	<!-- Compile the java code from ${src} into ${tmp} -->
-	<javac target="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
+	<javac srcdir="${src}" destdir="${tmp}" debug="on">
 	    <classpath refid="external_jars" />
 	</javac>
 
@@ -45,7 +45,7 @@
     <target name="javadoc" description="generate javadoc for gat users">
 	<delete dir="${doc}" />
 	<javadoc destdir="${doc}" access="public" use="true" notree="false" nonavbar="false" noindex="false" splitindex="true" version="true" nodeprecatedlist="false" nodeprecated="false" verbose="false" classpath="${lib}/GAT-API.jar">
-	    <link href="http://download.oracle.com/javase/1.5.0/docs/api/" />
+	    <link href="http://docs.oracle.com/javase/6/docs/api/"/>
 	    <classpath refid="external_jars" />
 
 	    <fileset dir="${src}">
