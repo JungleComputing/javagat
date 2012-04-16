@@ -98,6 +98,8 @@ public class SshSgeJob extends SimpleJobBase implements MetricListener {
             }
             jobStateBusy = true;
         }
+        
+        JobState resultState;
 	
         try {
             if (state == JobState.POST_STAGING || state == JobState.STOPPED
@@ -147,6 +149,7 @@ public class SshSgeJob extends SimpleJobBase implements MetricListener {
                     }
                     result.add(s);
                 }
+                resultState = mapSgeStatetoGAT(result);
             } catch (IOException e) {
                 logger.debug("retrieving job status sshpbsjob failed");
                 throw new GATInvocationException(
@@ -154,19 +157,19 @@ public class SshSgeJob extends SimpleJobBase implements MetricListener {
             } finally {
                 qstatResultFile.delete();
             }
-
-            JobState s = mapSgeStatetoGAT(result);
-            if (s != JobState.STOPPED) {
-                setState(s);
-            } else {
-                setState(JobState.POST_STAGING);
-            }
         } finally {
             synchronized(this) {
                 jobStateBusy = false;
                 notifyAll();
             }
         }
+
+        if (resultState != JobState.STOPPED) {
+            setState(resultState);
+        } else {
+            setState(JobState.POST_STAGING);
+        }
+
     }
 
     private boolean sawJob = false;
