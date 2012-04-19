@@ -1,7 +1,5 @@
 package org.gridlab.gat.monitoring.cpi;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,10 +142,7 @@ public abstract class MonitorableCpi implements Monitorable {
                 try {
                     listenerNodes[i].metricListener.processMetricEvent(v);
                 } catch (Throwable t) {
-                    StringWriter writer = new StringWriter();
-                    t.printStackTrace(new PrintWriter(writer));
-                    logger.warn("WARNING, user callback threw exception: " + t
-                            + "\n" + writer.toString());
+                    logger.warn("WARNING, user callback threw exception", t);
                 }
             }
         }
