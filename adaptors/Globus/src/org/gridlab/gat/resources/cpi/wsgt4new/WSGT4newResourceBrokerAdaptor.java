@@ -160,6 +160,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		String maxMemory = (String) sd.getAttributes().get("gt4new.maxMemory");
 		String minMemory = (String) sd.getAttributes().get("gt4new.minMemory");
 
+		String extensionName = (String) sd.getAttributes().get("gt4new.extensions.name");
 		String extensionEMail = (String) sd.getAttributes().get("gt4new.extensions.email");
 		String extensionEMailOnAbort = (String) sd.getAttributes().get("gt4new.extensions.emailOnAbort");
 		String extensionEMailOnExecution = (String) sd.getAttributes().get("gt4new.extensions.emailOnExecution");
@@ -230,6 +231,10 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 		
 		String extensions = "";
+		
+		if (extensionName != null) {
+			extensions += "<name>" + extensionName + "</name>";
+		}
 		
 		// Mail extensions
 		if (extensionEMail != null) {
