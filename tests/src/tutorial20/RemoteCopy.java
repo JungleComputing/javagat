@@ -1,7 +1,6 @@
 package tutorial20;
 
 import org.gridlab.gat.GAT;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 
 public class RemoteCopy {
