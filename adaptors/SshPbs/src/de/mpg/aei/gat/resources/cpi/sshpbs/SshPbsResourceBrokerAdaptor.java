@@ -363,9 +363,9 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
                 job.println("cd $PBS_O_WORKDIR");
                 job.println("trap 'echo retvalue = 1 > " + returnValueFile + " && exit 1' 1 2 3 15");
                 if (jobStarterFile != null) {
-                    job.println("/bin/sh " + jobStarterFile.getName() + " < /dev/null > /dev/null 2>&1 &");
+                    job.println(shell + " " + jobStarterFile.getName() + " < /dev/null > /dev/null 2>&1 &");
                 }
-                job.println("/bin/sh " + jobScriptFile.getName() + "< " + (sd.getStdin() != null ? sd.getStdin() : "/dev/null"));
+                job.println(shell + " " + jobScriptFile.getName() + "< " + (sd.getStdin() != null ? sd.getStdin() : "/dev/null"));
 	    }
             job.println("echo retvalue = $? > " + returnValueFile);
             if (userScript == null && jobStarterFile != null) {

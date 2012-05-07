@@ -351,9 +351,9 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
 		
 		job.println("trap 'echo retvalue = 1 > " + returnValueFile + " && exit 1' 1 2 3 15");
 		if (jobStarterFile != null) {
-		    job.println("/bin/sh " + jobStarterFile.getName() + " < /dev/null > /dev/null 2>&1 &");
+		    job.println(shell + " " + jobStarterFile.getName() + " < /dev/null > /dev/null 2>&1 &");
 		}
-		job.println("/bin/sh " + jobScriptFile.getName());
+		job.println(shell + " " + jobScriptFile.getName());
 	    }
 
 	    job.println("echo retvalue = $? > " + returnValueFile);
