@@ -350,10 +350,12 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
 		}
 		
 		job.println("trap 'echo retvalue = 1 > " + returnValueFile + " && exit 1' 1 2 3 15");
+		job.println("chmod +x " + jobScriptFile.getName());
+		
 		if (jobStarterFile != null) {
 		    job.println(shell + " " + jobStarterFile.getName() + " < /dev/null > /dev/null 2>&1 &");
 		}
-		job.println(shell + " " + jobScriptFile.getName());
+		job.println("ssh localhost \"cd `pwd` && ./" + jobScriptFile.getName() + "\"");
 	    }
 
 	    job.println("echo retvalue = $? > " + returnValueFile);
@@ -395,8 +397,17 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
 	PrintWriter job = null;
 	try {
 	    job = new PrintWriter(new BufferedWriter(new FileWriter(temp)));
-	    
-	    job.println("#!/bin/sh");
+	    String shell = sd.getStringAttribute(SSHSGE_SHELL, null);
+	    if (shell == null) {
+		Object o = gatContext.getPreferences().get(SSHSGE_SHELL);
+		if (o != null && o instanceof String) {
+		    shell = (String) o;
+		}
+	    }
+	    if (shell == null) {
+		shell = "/bin/sh";
+	    }
+	    job.println("#!" + shell);
 	    job.println("# Job starter script.");
 	    job.println("# The jobs are distributed over the available nodes in round-robin fashion.");
 	    job.println("GAT_MYDIR=`pwd`");
@@ -414,7 +425,7 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
 	    job.println("do");
 	    job.println("  for GAT_HOST in \"$@\"");
 	    job.println("  do");
-	    job.println("    echo #!/bin/sh > .gat_script.$GAT_JOBNO");
+	    job.println("    echo #!" + shell + " > .gat_script.$GAT_JOBNO");
 	    job.println("    echo cd $GAT_MYDIR >> .gat_script.$GAT_JOBNO");
 	    job.println("    echo trap \\\"touch .gat_done.$GAT_JOBNO\\\" 0 1 2 3 15 >> .gat_script.$GAT_JOBNO");
 	    job.println("    cat " + jobScript.getName() + " >> .gat_script.$GAT_JOBNO");
