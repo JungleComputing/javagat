@@ -392,7 +392,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         try {
             c.sftpClient.closeFile(c.sftpClient.createFileTruncate(location.getPath()));
         } catch (IOException e) {
-            return false;
+            throw new GATInvocationException("Could not create", e);
         } finally {
             closeConnection(c, gatContext.getPreferences());
         }
