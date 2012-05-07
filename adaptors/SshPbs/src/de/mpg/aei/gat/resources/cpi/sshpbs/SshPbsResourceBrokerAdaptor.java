@@ -60,6 +60,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
     static final String SSHPBS_NATIVE_FLAGS = "sshpbs.native.flags";
     static final String SSHPBS_SCRIPT = "sshpbs.script";
     static final String SSHPBS_SUBMITTER_SCHEME = "sshpbs.submitter.scheme";
+    static final String SSHPBS_SHELL = "sshpbs.shell";
 
     public static String[] getSupportedSchemes() {
 	return new String[] { "sshpbs"};
@@ -70,6 +71,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
         p.put(SSHPBS_NATIVE_FLAGS, "");
         p.put(SSHPBS_SCRIPT, "");
         p.put(SSHPBS_SUBMITTER_SCHEME, "ssh");
+        p.put(SSHPBS_SHELL, "/bin/sh");
         return p;
     }
 
@@ -450,9 +452,18 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
         PrintWriter job = null;
         try {
             job = new PrintWriter(new BufferedWriter(new FileWriter(temp)));
-            
-            job.println("#!/bin/sh");
-            job.println("# job script");
+            String shell = sd.getStringAttribute(SSHPBS_SHELL, null);
+	    if (shell == null) {
+		Object o = gatContext.getPreferences().get(SSHPBS_SHELL);
+		if (o != null && o instanceof String) {
+		    shell = (String) o;
+		}
+	    }
+	    if (shell == null) {
+		shell = "/bin/sh";
+	    }
+	    job.println("#!" + shell);
+	    job.println("# job script");
             
             // Support DIRECTORY
             String dir = sd.getStringAttribute(SoftwareDescription.DIRECTORY, null);

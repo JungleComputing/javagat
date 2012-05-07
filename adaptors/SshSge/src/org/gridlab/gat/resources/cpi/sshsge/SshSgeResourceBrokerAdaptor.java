@@ -58,6 +58,7 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
     static final String SSHSGE_NATIVE_FLAGS = "sshsge.native.flags";
     static final String SSHSGE_SCRIPT = "sshsge.script";
     static final String SSHSGE_SUBMITTER_SCHEME = "sshsge.submitter.scheme";
+    static final String SSHSGE_SHELL = "sshsge.shell";
 
     public static String[] getSupportedSchemes() {
 	return new String[] { "sshsge"};
@@ -68,6 +69,7 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
         p.put(SSHSGE_NATIVE_FLAGS, "");
         p.put(SSHSGE_SCRIPT, "");
         p.put(SSHSGE_SUBMITTER_SCHEME, "ssh");
+        p.put(SSHSGE_SHELL, "/bin/sh");
         return p;
     }
 
@@ -445,8 +447,17 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
 	PrintWriter job = null;
 	try {
 	    job = new PrintWriter(new BufferedWriter(new FileWriter(temp)));
-	    
-	    job.println("#!/bin/sh");
+	    String shell = sd.getStringAttribute(SSHSGE_SHELL, null);
+	    if (shell == null) {
+		Object o = gatContext.getPreferences().get(SSHSGE_SHELL);
+		if (o != null && o instanceof String) {
+		    shell = (String) o;
+		}
+	    }
+	    if (shell == null) {
+		shell = "/bin/sh";
+	    }
+	    job.println("#!" + shell);
 	    job.println("# job script");
 	    
 	    // Support DIRECTORY
