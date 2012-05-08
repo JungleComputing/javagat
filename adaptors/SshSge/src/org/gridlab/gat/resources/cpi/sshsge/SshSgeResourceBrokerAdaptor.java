@@ -355,6 +355,7 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
 		if (jobStarterFile != null) {
 		    job.println(shell + " " + jobStarterFile.getName() + " < /dev/null > /dev/null 2>&1 &");
 		}
+		// Ssh to localhost to make it seem like the shell to be used is interactive.
 		job.println("ssh localhost \"cd `pwd` && ./" + jobScriptFile.getName() + "\"");
 	    }
 
