@@ -472,16 +472,28 @@ public class Wrapper {
                     }
                     count++;
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(1000 + count * 100);
                     } catch (InterruptedException e) {
                         // ignore
                     }
                 }
-                synchronized(this.getClass()) {
-                    localFile.copy(dest);
+                count = 0;
+                while (count < 30) {
+                    try {
+                        synchronized(this.getClass()) {
+                            localFile.copy(dest);
+                        }
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Created status file " + dest + " for event " + event);
+                        }
+                        break;
+                    } catch(Throwable e) {
+                        count++;
+                        Thread.sleep(1000 + count * 100);
+                    }
                 }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Created status file " + dest + " for event " + event);
+                if (count >= 30) {
+                    logger.error("Could not create job status file " + dest + " for event " + event);
                 }
                 tmp.delete();
                 // Wait until submitter has seen the state change before notifying wrapper.
@@ -494,7 +506,7 @@ public class Wrapper {
                     }
                     count++;
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(1000 + 100 * count);
                     } catch (InterruptedException e) {
                         // ignore
                     }

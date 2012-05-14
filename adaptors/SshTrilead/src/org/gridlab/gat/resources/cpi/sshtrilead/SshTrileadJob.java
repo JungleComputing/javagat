@@ -147,7 +147,7 @@ public class SshTrileadJob extends JobCpi {
             session.close();
             // Give job some time to actually finish/cleanup.
             try {
-		Thread.sleep(5000);
+		wait(5000);
 	    } catch (InterruptedException e) {
 		// ignored
 	    }
