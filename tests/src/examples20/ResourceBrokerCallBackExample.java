@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -31,18 +32,21 @@ public class ResourceBrokerCallBackExample implements MetricListener {
     public static void main(String[] args) {
         if (args.length != 1) {
             System.out
-                    .println("\tUsage: bin/run_gat_app examples20.ResourceBrokerCallBackExample <brokerURI> (where location is a valid JavaGAT URI)\n");
+                    .println("\tUsage: scripts/run-gat-app examples20.ResourceBrokerCallBackExample <brokerURI> (where location is a valid JavaGAT URI)\n");
 
             System.exit(1);
         }
+
         new ResourceBrokerCallBackExample().start(args[0]);
         GAT.end();
     }
 
     public void start(String brokerURI) {
         ResourceBroker broker = null;
+        Preferences prefs = new Preferences();
+
         try {
-            broker = GAT.createResourceBroker(new URI(brokerURI));
+            broker = GAT.createResourceBroker(prefs, new URI(brokerURI));
         } catch (GATObjectCreationException e) {
             System.err.println("Failed to create resource broker at location '"
                     + brokerURI + "': " + e);
