@@ -393,6 +393,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
 	    this.state = state;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void run() {
             if (job != null) {
                 job.setDelegationEnabled(false);
