@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import com.trilead.ssh2.Connection;
 import com.trilead.ssh2.DebugLogger;
-import com.trilead.ssh2.LocalPortForwarder;
 import com.trilead.ssh2.SCPClient;
 import com.trilead.ssh2.Session;
 import com.trilead.ssh2.StreamGobbler;
@@ -1049,7 +1048,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
                 // Create a local port forwarder.
                 try {
-                    LocalPortForwarder lpf1 = conn.createLocalPortForwarder(localPort, host, fixedURI.getPort(SSH_PORT));
+                    conn.createLocalPortForwarder(localPort, host, fixedURI.getPort(SSH_PORT));
                 } catch (IOException e) {
                     throw new GATInvocationException("Got exception while creating local port forwarder");
                 }
