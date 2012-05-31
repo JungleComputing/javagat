@@ -92,7 +92,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         // Added: preferences for hostkey checking. Defaults are what used to be ....
         preferences.put("sshtrilead.strictHostKeyChecking", "false");
         preferences.put("sshtrilead.noHostKeyChecking", "true");
-        preferences.put("ssh.gateway.uri", null);
+        preferences.put("ssh.gateway.uri", "<no default value>");
         
         preferences.put("file.chmod", DEFAULT_MODE);
         return preferences;

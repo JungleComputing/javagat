@@ -65,6 +65,7 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         // Added: preferences for hostkey checking. Defaults are what used to be ....
         preferences.put("sshtrilead.strictHostKeyChecking", "false");
         preferences.put("sshtrilead.noHostKeyChecking", "true");
+        preferences.put("ssh.gateway.uri", "<no default value>");
         return preferences;
     }
 
