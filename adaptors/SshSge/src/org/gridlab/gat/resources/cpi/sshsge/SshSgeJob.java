@@ -1,6 +1,7 @@
 package org.gridlab.gat.resources.cpi.sshsge;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -121,8 +122,8 @@ public class SshSgeJob extends SimpleJobBase implements MetricListener {
                 sd.addAttribute(SoftwareDescription.SANDBOX_USEROOT, "true");
                 qstatResultFile = java.io.File.createTempFile("GAT", "tmp");
                 try {
-                    sd.setStdout(GAT.createFile(subContext, qstatResultFile.getAbsolutePath()));
-                } catch (GATObjectCreationException e1) {
+                    sd.setStdout(GAT.createFile(subContext, new URI("file:///" + qstatResultFile.getAbsolutePath().replace(File.separatorChar, '/'))));
+                } catch (Throwable e1) {
                     throw new GATInvocationException("Could not create GAT object for temporary " + qstatResultFile.getAbsolutePath(), e1);
                 }
                 JobDescription jd = new JobDescription(sd);
@@ -137,7 +138,7 @@ public class SshSgeJob extends SimpleJobBase implements MetricListener {
                     }
                 }
                 if (job.getState() != Job.JobState.STOPPED || job.getExitStatus() != 0) {
-                    throw new GATInvocationException("Could not submit qstat job");
+                    throw new GATInvocationException("Could not submit qstat job " + sd.toString());
                 }
 
                 // submit success.
@@ -151,7 +152,7 @@ public class SshSgeJob extends SimpleJobBase implements MetricListener {
                 }
                 resultState = mapSgeStatetoGAT(result);
             } catch (IOException e) {
-                logger.debug("retrieving job status sshpbsjob failed");
+                logger.debug("retrieving job status sshsgejob failed", e);
                 throw new GATInvocationException(
                         "Unable to retrieve the Job Status", e);
             } finally {

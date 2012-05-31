@@ -8,6 +8,7 @@
 package de.mpg.aei.gat.resources.cpi.sshpbs;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -147,10 +148,10 @@ public class SshPbsJob extends SimpleJobBase implements MetricListener {
 	        sd.addAttribute(SoftwareDescription.SANDBOX_ROOT, sandbox.getSandboxPath());
 	        qstatResultFile = java.io.File.createTempFile("GAT", "tmp");
 	        try {
-	            sd.setStdout(GAT.createFile(subContext, qstatResultFile.getAbsolutePath()));
-	        } catch (GATObjectCreationException e1) {
-	            throw new GATInvocationException("Could not create GAT object for temporary " + qstatResultFile.getAbsolutePath(), e1);
-	        }
+                    sd.setStdout(GAT.createFile(subContext, new URI("file:///" + qstatResultFile.getAbsolutePath().replace(File.separatorChar, '/'))));
+                } catch (Throwable e1) {
+                    throw new GATInvocationException("Could not create GAT object for temporary " + qstatResultFile.getAbsolutePath(), e1);
+                }
 	        JobDescription jd = new JobDescription(sd);
 	        Job job = jobHelper.submitJob(jd, this, "job.status");
 	        synchronized (job) {
@@ -165,7 +166,7 @@ public class SshPbsJob extends SimpleJobBase implements MetricListener {
 	            }
 	        }
 	        if (job.getState() != Job.JobState.STOPPED || job.getExitStatus() != 0) {
-	            throw new GATInvocationException("Could not submit qstat job");
+	            throw new GATInvocationException("Could not submit qstat job " + sd.toString());
 	        }
 
 	        // qstat success.
@@ -179,7 +180,7 @@ public class SshPbsJob extends SimpleJobBase implements MetricListener {
 	        }
 	        resultState = mapPbsStatetoGAT(result);
 	    } catch (IOException e) {
-	        logger.debug("retrieving job status sshpbsjob failed");
+	        logger.debug("retrieving job status sshpbsjob failed", e);
 	        throw new GATInvocationException(
 	                "Unable to retrieve the Job Status", e);
 	    } finally {

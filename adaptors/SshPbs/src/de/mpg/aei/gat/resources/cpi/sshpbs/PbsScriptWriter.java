@@ -28,16 +28,15 @@ public class PbsScriptWriter extends PrintWriter {
         print(opt);
         if (param != null) {
             print(" ");
-            println(param);
+            print(param);
         }
-        else {
-            println();
-        }
+        print('\n');
     }
     
     public void addString(String s) {
 	print(pbsSuffix);
 	print (" ");
-	println(s);
+	print(s);
+	print('\n');
     }
 }

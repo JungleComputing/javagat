@@ -22,11 +22,9 @@ public class SgeScriptWriter extends PrintWriter {
         print(opt);
         if (param != null) {
             print(" ");
-            println(param);
+            print(param);
         }
-        else {
-            println();
-        }
+        print('\n');
     }
 
     /**
@@ -36,6 +34,7 @@ public class SgeScriptWriter extends PrintWriter {
     public void addString(String s) {
 	print(sgeSuffix);
 	print (" ");
-	println(s);
+	print(s);
+	print('\n');
     }
 }

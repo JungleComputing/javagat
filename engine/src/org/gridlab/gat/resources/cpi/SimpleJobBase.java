@@ -177,7 +177,9 @@ public abstract class SimpleJobBase extends JobCpi {
 	    try {
 		getJobState(jobID);
 	    } catch (GATInvocationException e) {
-		logger.debug("GATInvocationException caught in jobListener");
+		if (logger.isDebugEnabled()) {
+		    logger.debug("GATInvocationException caught in jobListener", e);
+		}
 		if (state != JobState.STOPPED && state != JobState.POST_STAGING) {
 		    setState(JobState.SUBMISSION_ERROR);
 		}
