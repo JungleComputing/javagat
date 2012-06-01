@@ -14,8 +14,8 @@ FIXED BUGS AND ADDITIONS in version 2.1.2 with respect to version 2.1.1
 - added various package-info.java files, replacing package.html.
 - added resource count and process count to JobDescription.toString().
 - added an SSH-PBS and an SSH-SGE resource broker adaptor.
-  The PBS version was written by Alexander Beck-Ratzka and was later extended,
-  and used to derive a (similar) sshpsge adaptor.
+  The PBS version was written by Alexander Beck-Ratzka and was later extended by
+  Ceriel Jacobs, and used to derive a (similar) sshpsge adaptor.
 - the javadoc entry in api/build.xml referred to a no longer existing URL.
 - added an "end()" method to the SftpTrilead file adaptor to close all
   connections.
@@ -29,8 +29,6 @@ FIXED BUGS AND ADDITIONS in version 2.1.2 with respect to version 2.1.1
   connection, even for local operations.
 - for "copy to local" operations, the SshTrilead file adaptor did not close
   the destination file correctly.
-- added getAbsoluteFile() and getAbsolutePath() implementations to the
-  Commandline ssh adaptor.
 
 FIXED BUGS AND ADDITIONS in version 2.1.1 with respect to version 2.1.0
 - reduced the number of jar-files in the lib directory by combining them
