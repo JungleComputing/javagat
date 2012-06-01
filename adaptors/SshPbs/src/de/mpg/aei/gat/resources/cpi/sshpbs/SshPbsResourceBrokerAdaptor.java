@@ -357,7 +357,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
                     job.print("/bin/sh " + jobStarterFile.getName() + " < /dev/null > /dev/null 2>&1 &\n");
                 }
                 // Ssh to localhost to make it seem like the shell to be used is interactive.
-                job.print("ssh localhost \"cd `pwd` && ./" + jobScriptFile.getName() + "\"" + "< " + (sd.getStdin() != null ? sd.getStdin() : "/dev/null") + "\n");
+                job.print("ssh -o StrictHostKeyChecking=false localhost \"cd `pwd` && ./" + jobScriptFile.getName() + "\"" + "< " + (sd.getStdin() != null ? sd.getStdin() : "/dev/null") + "\n");
             }
             job.print("echo retvalue = $? > " + returnValueFile + "\n");
             if (userScript == null && jobStarterFile != null) {
@@ -415,7 +415,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
             job.print("    echo trap \\\"touch .gat_done.$GAT_JOBNO\\\" 0 1 2 3 15 >> .gat_script.$GAT_JOBNO\n");
             job.print("    cat " + jobScript.getName() + " >> .gat_script.$GAT_JOBNO\n");
             job.print("    chmod +x .gat_script.$GAT_JOBNO\n");
-            job.print(  "    ssh $GAT_HOST \"$GAT_MYDIR/.gat_script.$GAT_JOBNO");
+            job.print(  "    ssh -o StrictHostKeyChecking=false $GAT_HOST \"$GAT_MYDIR/.gat_script.$GAT_JOBNO");
             if (sd.getStdin() != null) {
                 job.print(" < $GAT_MYDIR/" + sd.getStdin().getName());
             } else {
