@@ -675,7 +675,13 @@ public class URI implements Serializable, Comparable<Object> {
      * @return The resulting URI
      */
     public URI resolve(String arg0) {
-        return new URI(u.resolve(arg0));
+        URI uri = new URI(u.resolve(arg0));
+        // Fix the '/' issue
+        try {
+            return uri.setPath(uri.getPath());
+        } catch(Throwable e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     /**
@@ -687,7 +693,14 @@ public class URI implements Serializable, Comparable<Object> {
      * @return The resulting URI
      */
     public URI resolve(java.net.URI arg0) {
-        return new URI(u.resolve(arg0));
+        URI uri = new URI(u.resolve(arg0));
+        // Fix the '/' issue.
+        try {
+            return uri.setPath(uri.getPath());
+        } catch(Throwable e) {
+            // Should not happen.
+            return uri;
+        }
     }
 
     /**
