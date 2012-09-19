@@ -115,6 +115,39 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
 	} catch (Throwable e) {
 	    throw new GATObjectCreationException("Could not create broker to submit SGE jobs", e);
 	}
+	// Detect if subBroker can actually submit SGE jobs (and distinguish from PBS).
+	// Check if qrsh command exists?
+	// So, execute "which qrsh" and check exit status, should be 0.
+	SoftwareDescription sd = new SoftwareDescription();
+	sd.setExecutable("which");
+	sd.setArguments("qrsh");
+
+	if (logger.isDebugEnabled()) {
+	    logger.debug("Submitting test job: " + sd);
+	}
+	JobDescription jd = new JobDescription(sd);
+	Job job;
+	try {
+	    job = subBroker.submitJob(jd, this, "job.status");
+	} catch (Throwable e) {
+	    throw new GATObjectCreationException("broker to submit SGE jobs cannot submit test job", e);
+	}
+	synchronized(job) {
+	    while (job.getState() != Job.JobState.STOPPED && job.getState() != Job.JobState.SUBMISSION_ERROR) {
+		try {
+		    job.wait();
+		} catch(InterruptedException e) {
+		    // ignore
+		}
+	    }
+	}
+	try {
+	    if (job.getExitStatus() != 0) {
+	        throw new GATObjectCreationException("broker to submit SGE jobs could not find SGE command");
+	    }
+	} catch (GATInvocationException e) {
+	    throw new GATObjectCreationException("broker to submit SGE jobs could not get exit status", e);
+	}
     }
 
     public Job submitJob(AbstractJobDescription abstractDescription,
@@ -127,7 +160,7 @@ public class SshSgeResourceBrokerAdaptor extends ResourceBrokerCpi implements Me
 			    + abstractDescription.getClass());
 	}
 
-	JobDescription description = (JobDescription) abstractDescription;
+	JobDescription description = (JobDescription) ((JobDescription) abstractDescription).clone();
 	SoftwareDescription sd = description.getSoftwareDescription();
 	
 	int nproc = description.getProcessCount();
