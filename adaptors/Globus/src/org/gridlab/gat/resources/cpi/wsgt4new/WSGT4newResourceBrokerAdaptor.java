@@ -411,7 +411,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
         WSGT4newJob wsgt4job = null;
-        
+        Metric metric = null;
         try {
             wsgt4job = new WSGT4newJob(gatContext, description, sandbox);
             Job job = null;
@@ -424,7 +424,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
                 job = wsgt4job;
             }
             if (listener != null && metricDefinitionName != null) {
-                Metric metric = wsgt4job.getMetricDefinitionByName(metricDefinitionName)
+                metric = wsgt4job.getMetricDefinitionByName(metricDefinitionName)
                 .createMetric(null);
                 wsgt4job.addMetricListener(listener, metric);
             }
@@ -499,6 +499,10 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             return job;
         } catch(GATInvocationException e) {
             if (wsgt4job != null) {
+        	if (metric != null) {
+        	    // Prevent invocation of listener!
+        	    wsgt4job.removeMetricListener(listener, metric);
+        	}
         	wsgt4job.finishJob();
             } else {
         	sandbox.removeSandboxDir();
@@ -506,6 +510,10 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw e;
         } catch(Throwable e) {
             if (wsgt4job != null) {
+        	if (metric != null) {
+        	    // Prevent invocation of listener!
+        	    wsgt4job.removeMetricListener(listener, metric);
+        	}
         	synchronized(wsgt4job) {
         	    Job.JobState state = wsgt4job.getState();
         	    if (state != Job.JobState.STOPPED) {
