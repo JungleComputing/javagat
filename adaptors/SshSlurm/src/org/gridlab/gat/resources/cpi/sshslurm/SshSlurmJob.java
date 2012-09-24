@@ -139,6 +139,11 @@ public class SshSlurmJob extends SimpleJobBase implements MetricListener {
                 // submit success.
                 BufferedReader in = new BufferedReader(new FileReader(squeueResultFile.getAbsolutePath()));
                 String status = in.readLine();
+                // status is now null when EOF is seen, which may happen if the job is not present
+                // or finished. Set to "" in this case. --Ceriel
+                if (status == null) {
+                    status = "";
+                }
                 if (logger.isDebugEnabled()) {
                     logger.debug("squeue line: " + status);
                 }
