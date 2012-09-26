@@ -1,3 +1,16 @@
+FIXED BUGS AND ADDITIONS in version 2.1.3 with respect to version 2.1.2
+- added a test in the sshpbs and sshsge adaptors, to discriminate between
+  the two. If no specific adaptor was specified, either one could be chosen,
+  with negative effects.
+- added an sshslurm adaptor.
+- fixed a bug in the URI.resolve() method.
+- prevent job status updates (through upcalls) when job submission through
+  the wsgt4new adaptor fails.
+- fixed a bug in the JobDescription.clone() method. Apparently, it was not used
+  much ...
+- since the sshpbs and sshsge adaptors change the job description (in particular with
+  respect to file staging), they now first clone the job description.
+
 FIXED BUGS AND ADDITIONS in version 2.1.2 with respect to version 2.1.1
 - getMessage() of GatInvocationException was far too verbose; it included stacktraces.
   This has been fixed.
