@@ -114,6 +114,39 @@ public class SshSlurmResourceBrokerAdaptor extends ResourceBrokerCpi implements
             throw new GATObjectCreationException(
                     "Could not create broker to submit Slurm jobs", e);
         }
+	// Detect if subBroker can actually submit Slurm jobs.
+	// Check if squeue command exists?
+	// So, execute "which squeue" and check exit status, should be 0.
+	SoftwareDescription sd = new SoftwareDescription();
+	sd.setExecutable("which");
+	sd.setArguments("squeue");
+
+	if (logger.isDebugEnabled()) {
+	    logger.debug("Submitting test job: " + sd);
+	}
+	JobDescription jd = new JobDescription(sd);
+	Job job;
+	try {
+	    job = subBroker.submitJob(jd, this, "job.status");
+	} catch (Throwable e) {
+	    throw new GATObjectCreationException("broker to submit Slurm jobs cannot submit test job", e);
+	}
+	synchronized(job) {
+	    while (job.getState() != Job.JobState.STOPPED && job.getState() != Job.JobState.SUBMISSION_ERROR) {
+		try {
+		    job.wait();
+		} catch(InterruptedException e) {
+		    // ignore
+		}
+	    }
+	}
+	try {
+	    if (job.getExitStatus() != 0) {
+	        throw new GATObjectCreationException("broker to submit Slurm jobs could not find Slurm command");
+	    }
+	} catch (GATInvocationException e) {
+	    throw new GATObjectCreationException("broker to submit Slurm jobs could not get exit status", e);
+	}
     }
 
     public Job submitJob(AbstractJobDescription abstractDescription,
@@ -342,12 +375,18 @@ public class SshSlurmResourceBrokerAdaptor extends ResourceBrokerCpi implements
                 // }
 
                 // Files for stdout and stderr.
+                String out = "";
                 if (sd.getStdout() != null) {
-                    job.addOption("output", sd.getStdout().getName());
+                    // job.addOption("output", sd.getStdout().getName());
+                    // No, add the option to srun, otherwise we may get output from srun itself. --Ceriel
+                    out = "-o " + sd.getStdout().getName() + " ";
                 }
 
+                String err = "";
                 if (sd.getStderr() != null) {
-                    job.addOption("error", sd.getStderr().getName());
+                    // job.addOption("error", sd.getStderr().getName());
+                    // No, add the option to srun, otherwise we may get error output from srun itself. --Ceriel
+                    err = "-e " + sd.getStderr().getName() + " ";
                 }
 
                 if (sd.getStdin() != null) {
@@ -370,7 +409,7 @@ public class SshSlurmResourceBrokerAdaptor extends ResourceBrokerCpi implements
                 
                 job.print("trap 'echo retvalue = 1 > " + returnValueFile
                         + " && exit 1' 1 2 3 15\n");
-                job.print("srun " + createSrunCommand(description) + "\n");
+                job.print("srun " + out + err + createSrunCommand(description) + "\n");
             }
 
             job.print("echo retvalue = $? > " + returnValueFile + "\n");
@@ -403,7 +442,7 @@ public class SshSlurmResourceBrokerAdaptor extends ResourceBrokerCpi implements
             // Create sbatch job
             SoftwareDescription sd = new SoftwareDescription();
             sd.setExecutable("sbatch");
-            sd.setArguments(sbatchFile.getName());
+            sd.setArguments("-Q", sbatchFile.getName());
             sd.addAttribute(SoftwareDescription.SANDBOX_USEROOT, "true");
             slurmResultFile = java.io.File.createTempFile("GAT", "tmp");
             try {
