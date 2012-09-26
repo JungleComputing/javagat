@@ -54,7 +54,7 @@ public class ResourceBrokerJavaJobExample {
             return;
         }
         JavaSoftwareDescription sd = new JavaSoftwareDescription();
-        sd.setExecutable("/path/to/java");
+        sd.setExecutable("/usr/bin/java");
         sd.setJavaMain("my.package.HelloWorld");
         sd.setJavaArguments("hello", "world");
         sd.setJavaClassPath("myJar1:myDir");
