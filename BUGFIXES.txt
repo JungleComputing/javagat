@@ -7,7 +7,9 @@ FIXED BUGS AND ADDITIONS in version 2.1.3 with respect to version 2.1.2
 - prevent job status updates (through upcalls) when job submission through
   the wsgt4new adaptor fails.
 - fixed a bug in the JobDescription.clone() method. Apparently, it was not used
-  much ...
+  much ... processcount and nodecount were not copied.
+- also fixed SoftwareDescription.clone() and JavaSoftwareDescription.clone() (the latter
+  did not even exist ...)
 - since the sshpbs and sshsge adaptors change the job description (in particular with
   respect to file staging), they now first clone the job description.
 
