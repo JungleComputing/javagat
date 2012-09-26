@@ -166,6 +166,8 @@ public class JobDescription extends AbstractJobDescription {
         if (resourceDescription != null) {
             description.setResourceDescription(resourceDescription);
         }
+        description.processCount = processCount;
+        description.resourceCount = resourceCount;
         return description;
     }
 
