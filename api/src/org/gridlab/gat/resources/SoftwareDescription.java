@@ -248,6 +248,35 @@ public class SoftwareDescription implements java.io.Serializable {
         deletedFiles = new ArrayList<File>();
         wipedFiles = new ArrayList<File>();
     }
+    
+    @SuppressWarnings("unchecked")
+    SoftwareDescription(SoftwareDescription sd) {
+        executable = sd.executable;
+        stdinFile = sd.stdinFile;
+        stdoutFile = sd.stdoutFile;
+        stderrFile = sd.stderrFile;
+        streamingStderr = sd.streamingStderr;
+        streamingStdin = sd.streamingStdin;
+        streamingStdout = sd.streamingStdout;
+        preStagedFiles = sd.preStagedFiles;
+        postStagedFiles = sd.postStagedFiles;
+        deletedFiles = sd.deletedFiles;
+        wipedFiles = sd.wipedFiles;
+        deletePostStaged = sd.deletePostStaged;
+        deletePreStaged = sd.deletePreStaged;
+        wipePostStaged = sd.wipePostStaged;
+        wipePreStaged = sd.wipePreStaged;
+        if (sd.arguments != null) {
+            arguments = new String[sd.arguments.length];
+            System.arraycopy(sd.arguments, 0, arguments, 0, arguments.length);
+        }
+        if (sd.attributes != null) {
+            attributes = (HashMap<String, Object>) sd.attributes.clone();
+        }
+        if (sd.environment != null) {
+            environment = (HashMap<String, Object>) sd.environment.clone();
+        }
+    }
 
     /**
      * To be implemented.
@@ -1180,36 +1209,8 @@ public class SoftwareDescription implements java.io.Serializable {
         toWrapper = true;
     }
 
-    @SuppressWarnings("unchecked")
     public Object clone() {
-        SoftwareDescription sd = new SoftwareDescription();
-        sd.executable = executable;
-        sd.stdinFile = stdinFile;
-        sd.stdoutFile = stdoutFile;
-        sd.stderrFile = stderrFile;
-        sd.streamingStderr = streamingStderr;
-        sd.streamingStdin = streamingStdin;
-        sd.streamingStdout = streamingStdout;
-        sd.preStagedFiles = preStagedFiles;
-        sd.postStagedFiles = postStagedFiles;
-        sd.deletedFiles = deletedFiles;
-        sd.wipedFiles = wipedFiles;
-        sd.deletePostStaged = deletePostStaged;
-        sd.deletePreStaged = deletePreStaged;
-        sd.wipePostStaged = wipePostStaged;
-        sd.wipePreStaged = wipePreStaged;
-        if (arguments != null) {
-            sd.arguments = new String[arguments.length];
-            System.arraycopy(arguments, 0, sd.arguments, 0, arguments.length);
-        }
-        if (attributes != null) {
-            sd.attributes = (HashMap<String, Object>) attributes.clone();
-        }
-        if (environment != null) {
-            sd.environment = (HashMap<String, Object>) environment.clone();
-        }
-        return sd;
-
+	return new SoftwareDescription(this);
     }
 
     /**

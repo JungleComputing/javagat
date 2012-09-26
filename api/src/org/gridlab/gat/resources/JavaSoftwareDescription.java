@@ -94,6 +94,19 @@ public class JavaSoftwareDescription extends SoftwareDescription {
     public JavaSoftwareDescription() {
         super();
     }
+    
+    JavaSoftwareDescription(JavaSoftwareDescription jd) {
+	super(jd);
+	javaOptions = jd.javaOptions.clone();
+	javaSystemProperties = new HashMap<String, String>(jd.javaSystemProperties);
+	javaMain = jd.javaMain;
+	javaArguments = jd.javaArguments.clone();
+	javaClassPath = jd.javaClassPath;
+    }
+    
+    public Object clone() {
+	return new JavaSoftwareDescription(this);
+    }
 
     /**
      * Create a {@link JavaSoftwareDescription} with the provided
