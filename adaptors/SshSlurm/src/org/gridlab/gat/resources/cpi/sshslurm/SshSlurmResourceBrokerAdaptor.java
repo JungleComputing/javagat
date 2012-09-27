@@ -307,7 +307,7 @@ public class SshSlurmResourceBrokerAdaptor extends ResourceBrokerCpi implements
                 job.addOption("ntasks", nproc);
                 
                 // force exclusive node reservation?
-//                job.addOption("exclusive", null);
+                job.addOption("exclusive", null);
                 
                 // help slurm in distributing tasks over nodes evenly
                 int taskPerNode= nproc/nodes;
