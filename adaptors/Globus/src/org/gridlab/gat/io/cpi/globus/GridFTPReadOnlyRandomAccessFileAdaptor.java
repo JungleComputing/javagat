@@ -237,9 +237,9 @@ public class GridFTPReadOnlyRandomAccessFileAdaptor extends RandomAccessFileCpi 
             if (o < 0) {
             	o = 0;
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("Read buffer, b.length = " + b.length + ", l = " + l + ", o = " + o);
-                logger.debug("buf.length = " + buf.length + ", off = " + off + ", len = " + len);
+            if (logger.isTraceEnabled()) {
+                logger.trace("Read buffer, b.length = " + b.length + ", l = " + l + ", o = " + o);
+                logger.trace("buf.length = " + buf.length + ", off = " + off + ", len = " + len);
             }
             
             if ((l + this.writtenLen) > this.len) {
