@@ -22,6 +22,7 @@
 	<ant dir="Glite" />
 	<ant dir="Unicore" />
 	<ant dir="Koala" />
+	<ant dir="Lsf" />
     </target>
 
     <target name="light" description="build local, sshtrilead, sftptrilead, commandlinessh adaptors">
@@ -36,6 +37,7 @@
 		<ant dir="SshSge" />
 		<ant dir="SshSlurm" />
 		<ant dir="Sge" />
+		<ant dir="Lsf" />
 		<ant dir="Generic" />
 	    </target>
 
@@ -66,6 +68,7 @@
 		<ant dir="Unicore" target="clean" />
 		<ant dir="Koala" target="clean" />
 		<ant dir="contributed" target="clean" />
+		<ant dir="Lsf"  target="clean" />
 	    </target>
 
 	    <target name="commandlinessh" description="build CommandlineSsh adaptors">
@@ -134,6 +137,10 @@
 
 	    <target name="koala" description="build Koala adaptors">
 		<ant dir="Koala" />
+	    </target>
+
+	    <target name="lsf" description="build LSF adaptors">
+		<ant dir="Lsf" />
 	    </target>
 
 	</project>
