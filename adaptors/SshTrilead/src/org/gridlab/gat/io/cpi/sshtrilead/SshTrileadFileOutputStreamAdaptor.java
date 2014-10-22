@@ -217,6 +217,7 @@ public class SshTrileadFileOutputStreamAdaptor extends FileOutputStreamCpi {
                     out.append(line);
                     out.append("\n");
                 }
+                br.close();
                 result[SshTrileadFileAdaptor.STDOUT] = out.toString();
                 br = new BufferedReader(new InputStreamReader(stderr));
                 StringBuffer err = new StringBuffer();
@@ -228,6 +229,7 @@ public class SshTrileadFileOutputStreamAdaptor extends FileOutputStreamCpi {
                     err.append(line);
                     err.append("\n");
                 }
+                br.close();
                 result[SshTrileadFileAdaptor.STDERR] = err.toString();
                 
                 // Sometimes hangs here??? Added count. --Ceriel

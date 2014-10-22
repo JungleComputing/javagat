@@ -856,6 +856,12 @@ public class UnicoreJob extends JobCpi {
 			}
 			e.printStackTrace();
 			return -1;
+		} finally {
+		    try {
+			rExit.close();
+		    } catch (IOException e) {
+			// ignore
+		    }
 		}
     }
   

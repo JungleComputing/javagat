@@ -331,6 +331,12 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             throw new GATInvocationException("GlobusJob", e);
         } catch (IOException e) {
             throw new GATInvocationException("GlobusJob", e);
+        } finally {
+            try {
+        	bufferedReader.close();
+            } catch(Throwable e) {
+        	// ignore
+            }
         }
         if (!file.delete()) {
             logger.info("file '" + exitStatusFile

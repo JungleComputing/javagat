@@ -343,31 +343,28 @@ public class JNDIUtils
 
             InputStream configInput;
             String configFileName =
-                JNDIUtils.getJNDIConfigFileName(msgCtx);
-            try
-            {
-                String cfgDir = null;
-                if (msgCtx == null) 
-                {
-                    cfgDir = ContainerConfig.getGlobusLocation();
-                } 
-                else 
-                {
-                    cfgDir = (String)msgCtx.getProperty(Constants.MC_CONFIGPATH);
-                    if (cfgDir == null) 
-                    {
-                        cfgDir = ".";
-                    }
-                }
-                String file = cfgDir + File.separator + configFileName;
-                logger.debug(
-                        "Trying to load jndi configuration from file: " +
-                        file);
+        	    JNDIUtils.getJNDIConfigFileName(msgCtx);
 
-                configInput = new FileInputStream(file);
-            }
-            catch (FileNotFoundException e)
+            String cfgDir = null;
+            if (msgCtx == null) 
             {
+        	cfgDir = ContainerConfig.getGlobusLocation();
+            } 
+            else 
+            {
+        	cfgDir = (String)msgCtx.getProperty(Constants.MC_CONFIGPATH);
+        	if (cfgDir == null) 
+        	{
+        	    cfgDir = ".";
+        	}
+            }
+            String file = cfgDir + File.separator + configFileName;
+            logger.debug(
+        	    "Trying to load jndi configuration from file: " +
+        		    file);
+            try {
+        	configInput = new FileInputStream(file);
+            } catch (FileNotFoundException e) {
                 logger.debug(
                              "Trying to load jndi configuration from resource stream: " + configFileName);
 
@@ -385,6 +382,11 @@ public class JNDIUtils
 
             parseJNDIConfig(context, configInput, msgCtx.getAxisEngine());
             
+            try {
+        	configInput.close();
+            } catch(Throwable e) {
+        	// ignore
+            }
             initialContext = context;
         }
 

@@ -214,6 +214,7 @@ public class SshTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
                     err.append(line);
                     err.append("\n");
                 }
+                br.close();
                 result[SshTrileadFileAdaptor.STDERR] = err.toString();
                 
                 // Sometimes hangs here??? Added count. --Ceriel

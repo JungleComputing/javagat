@@ -1240,6 +1240,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         	out.append(line);
         	out.append("\n");
             }
+            br.close();
             result[STDOUT] = out.toString();
             br = new BufferedReader(new InputStreamReader(stderr));
             StringBuffer err = new StringBuffer();
@@ -1251,6 +1252,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         	err.append(line);
         	err.append("\n");
             }
+            br.close();
             result[STDERR] = err.toString();
             // Sometimes hangs here??? Added count. --Ceriel
             int sleepcount = 0;

@@ -57,6 +57,7 @@ public class VomsServerResponse {
 		if (acBytes != null && atCert == null) {
 			ASN1InputStream asn1Stream = new ASN1InputStream(acBytes);
 			DERObject dObj = asn1Stream.readObject();
+			asn1Stream.close();
 
 			if (!(dObj instanceof ASN1Sequence)) {
 				throw new GATInvocationException("Invalid DER object found in AC");
