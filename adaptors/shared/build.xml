@@ -14,14 +14,14 @@
 	<!-- Copy libraries to lib directory -->
 	<copy todir="${lib}">
 	    <fileset dir=".">
-		<include name="bcprov-jdk15-141.jar" />
+		<include name="bcprov-jdk15-145.jar" />
 		<include name="mail.jar" />
 	    </fileset>
 	</copy>
 
 	<jar destfile="${lib}/shared.jar">
 	    <zipgroupfileset dir="." includes="*.jar"
-		excludes="bcprov-jdk15-141.jar, mail.jar" /> 
+		excludes="bcprov-jdk15-145.jar, mail.jar" /> 
 	</jar>
 
     </target>
