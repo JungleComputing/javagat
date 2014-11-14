@@ -533,7 +533,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         // default path: /wsrf/services/ManagedJobFactoryService
         logger.debug("brokerURI: " + brokerURI);
         String scheme = "https";
-        if (brokerURI.getScheme() != null && !brokerURI.getScheme().equals("any")) {
+	String myScheme = brokerURI.getScheme();
+        if (myScheme != null && !myScheme.equals("any") && !myScheme.equals("wsgt4new")) {
             scheme = brokerURI.getScheme();
         }
 
