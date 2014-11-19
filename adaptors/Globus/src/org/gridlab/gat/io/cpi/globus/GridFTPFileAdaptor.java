@@ -599,7 +599,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
             if (logger.isDebugEnabled()) {
                 logger.debug("credential: \n"
-                        + (credential == null ? "NULL" : ((GlobusGSSCredentialImpl) credential).getGlobusCredential()
+                        + (credential == null ? "NULL" : ((GlobusGSSCredentialImpl) credential).getX509Credential()
                                 .toString()));
             }
 

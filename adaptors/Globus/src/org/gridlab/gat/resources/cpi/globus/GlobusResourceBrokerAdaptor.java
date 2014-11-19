@@ -337,6 +337,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                 Gram.ping(credential, contact);
                 pinged = true;
             } catch(Throwable e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Could not ping " + contact, e);
+                }
                 throw new GATInvocationException("GlobusResourceBroker: Could not ping resource manager");
             }
         }
@@ -472,8 +475,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger
-                        .debug("WARNING, could not get state of globus job: "
-                                + e);
+                        .debug("WARNING, could not get state of globus job: ",
+                                e);
             }
             if (j.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
                 // This means we could not contact the job manager.
@@ -625,8 +628,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger
-                        .debug("WARNING, could not get state of globus job: "
-                                + e);
+                        .debug("WARNING, could not get state of globus job: ",
+                                e);
             }
             if (j.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
                 // This means we could not contact the job manager.
@@ -659,8 +662,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (Throwable t) {
             if (logger.isDebugEnabled()) {
                 logger
-                        .debug("WARNING, globus job could not deactivate callback: "
-                                + t);
+                        .debug("WARNING, globus job could not deactivate callback: ",
+                                t);
             }
         }
     }

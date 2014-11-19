@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.globus.gsi.GSIConstants;
-import org.globus.gsi.GlobusCredential;
-import org.globus.gsi.GlobusCredentialException;
+import org.globus.gsi.X509Credential;
+import org.globus.gsi.CredentialException;
 import org.globus.gsi.gssapi.GSSConstants;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.gsi.gssapi.GlobusGSSManagerImpl;
@@ -262,12 +262,12 @@ public class LfcConnection {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Proxy is " + proxyPath);
             }
-            GlobusCredential credential = new GlobusCredential(proxyPath);
+            X509Credential credential = new X509Credential(proxyPath);
             gssCredential = new GlobusGSSCredentialImpl(credential, 0);
         } catch (GSSException e) {
             LOGGER.warn(e.toString());
             throw new IOException("Failed to load credentials");
-        } catch (GlobusCredentialException e) {
+        } catch (CredentialException e) {
             LOGGER.warn(e.toString());
             throw new IOException("Failed to load credentials");
         }

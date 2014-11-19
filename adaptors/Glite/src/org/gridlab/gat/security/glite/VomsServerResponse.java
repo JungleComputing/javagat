@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.x509.AttributeCertificate;
 import org.gridlab.gat.GATInvocationException;
 
@@ -56,7 +56,7 @@ public class VomsServerResponse {
 
 		if (acBytes != null && atCert == null) {
 			ASN1InputStream asn1Stream = new ASN1InputStream(acBytes);
-			DERObject dObj = asn1Stream.readObject();
+			ASN1Primitive dObj = asn1Stream.readObject();
 			asn1Stream.close();
 
 			if (!(dObj instanceof ASN1Sequence)) {

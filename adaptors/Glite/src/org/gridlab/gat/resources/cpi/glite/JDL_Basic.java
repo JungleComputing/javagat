@@ -60,6 +60,9 @@ public class JDL_Basic extends AbstractJDL{
         environments = new ArrayList<String>();
         arguments = new ArrayList<String>();
         requirements.add("other.GlueCEStateStatus == \"Production\"");
+        // Faster site
+        // requirements.add("other.GlueSiteUniqueID == \"IFCA-LCG2\"");
+        // requirements.add("other.GlueSiteUniqueID == \"BIFI-IBERGRID\"");
 
         // ... add content
         this.executable = (swDescription.getExecutable().toString());
@@ -118,7 +121,9 @@ public class JDL_Basic extends AbstractJDL{
         		if (map.get(file) != null) {
         			addInputFile("\""+map.get(file).getPath()+"\"");
         		}else{
-        			addInputFile("\""+file.getAbsolutePath()+"\"");
+        			// addInputFile("\""+file.getAbsolutePath()+"\"");
+                                org.gridlab.gat.io.File gatFile = (org.gridlab.gat.io.File)file;
+                                addInputFile("\""+gatFile.toGATURI().toString()+"\"");
         		}
         	}
 // But JavaGAT does ;-)
@@ -158,12 +163,15 @@ public class JDL_Basic extends AbstractJDL{
                 outputFiles.put(file.getPath(),null);
             } else { // copy poststaged file somewhere after staging out
                 org.gridlab.gat.io.File fileDest = map.get(file);
+                /*
                 java.io.File parentFile = new java.io.File(fileDest.getParent());
                 if (!parentFile.exists()) {
                     throw new GATObjectCreationException(
                             "The folder for the poststaged file does not exist!");
                 }
-                outputFiles.put(file.getPath(), fileDest.getName());
+                */
+                // outputFiles.put(file.getPath(), fileDest.getName());
+                outputFiles.put(file.getPath(), fileDest.toGATURI().toString());
             }
         }
     }

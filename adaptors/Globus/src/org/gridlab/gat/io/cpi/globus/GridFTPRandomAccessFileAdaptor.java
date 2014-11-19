@@ -396,6 +396,11 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         public void close() {
         }
 
+        public long totalSize() {
+            // TODO!
+            return 0L;
+        }
+
         public synchronized Buffer read() throws IOException {
             while (! finished && list.isEmpty()) {
                 readerWaiting = true;

@@ -61,8 +61,8 @@ import org.apache.axis.types.UnsignedLong;
 import org.globus.axis.gsi.GSIConstants;
 import org.globus.axis.transport.HTTPSSender;
 import org.globus.axis.util.Util;
-import org.globus.gsi.GlobusCredential;
-import org.globus.gsi.GlobusCredentialException;
+import org.globus.gsi.X509Credential;
+import org.globus.gsi.CredentialException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.gsi.gssapi.auth.NoAuthorization;
 import org.gridlab.gat.io.attributes.GroupPrincipal;
@@ -138,7 +138,7 @@ public class SrmConnection {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Delegating proxy credentials");
             }
-            GlobusCredential credential = new GlobusCredential(proxyPath);
+            X509Credential credential = new X509Credential(proxyPath);
             GSSCredential gssCredential = new GlobusGSSCredentialImpl(
                     credential, GSSCredential.INITIATE_AND_ACCEPT);
             ((Stub) this.service)._setProperty(GSIConstants.GSI_CREDENTIALS,
@@ -158,7 +158,7 @@ public class SrmConnection {
         } catch (ServiceException e) {
             LOGGER.warn(e.toString());
             throw new IOException("Could not connect to SRM endpoint");
-        } catch (GlobusCredentialException e) {
+        } catch (CredentialException e) {
             LOGGER.warn(e.toString());
             throw new IOException(SrmConnection.COULD_NOT_LOAD_CREDENTIALS);
         } catch (GSSException e) {

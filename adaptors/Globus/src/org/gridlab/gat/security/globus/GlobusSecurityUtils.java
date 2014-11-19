@@ -5,11 +5,14 @@ package org.gridlab.gat.security.globus;
 
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
+import java.security.Security;
+import java.security.Provider;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.globus.gsi.GlobusCredential;
-import org.globus.gsi.GlobusCredentialException;
+import org.globus.gsi.X509Credential;
+import org.globus.gsi.CredentialException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.myproxy.MyProxy;
 import org.globus.myproxy.MyProxyException;
@@ -36,13 +39,19 @@ class GlobusContextCreator implements SecurityContextCreator {
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
             URI location) throws CouldNotInitializeCredentialException,
             CredentialExpiredException, InvalidUsernameOrPasswordException {
+        // Install correct version of security provider.
+        Provider p = GlobusSecurityUtils.setSecurityProvider();
         // automatically try and insert the default credential if it was not
         // there.
-        GSSCredential cred = GlobusSecurityUtils
-                .getDefaultCredential();
-        CredentialSecurityContext c = new CredentialSecurityContext();
-        c.putDataObject("globus", cred);
-        return c;
+        try {
+            GSSCredential cred = GlobusSecurityUtils
+                    .getDefaultCredential();
+            CredentialSecurityContext c = new CredentialSecurityContext();
+            c.putDataObject("globus", cred);
+            return c;
+        } finally {
+            GlobusSecurityUtils.restoreSecurityProvider(p);
+        }
     }
 
     public Object createUserData(GATContext gatContext, URI location,
@@ -87,14 +96,15 @@ class GlobusContextCreator implements SecurityContextCreator {
                         logger
                                 .debug("CredentialSecurityContext credential is instance of byte[]");
                     }
+                    Provider p = GlobusSecurityUtils.setSecurityProvider();
                     try {
-                        GlobusCredential globusCred = new GlobusCredential(
+                        X509Credential globusCred = new X509Credential(
                                 new ByteArrayInputStream(
                                         (byte[]) credentialObject));
                         GSSCredential result = new GlobusGSSCredentialImpl(
                                 globusCred, GSSCredential.INITIATE_AND_ACCEPT);
                         return result;
-                    } catch (GlobusCredentialException e) {
+                    } catch (CredentialException e) {
                         if (logger.isDebugEnabled()) {
                             logger.debug("Got exception", e);
                         }
@@ -104,6 +114,8 @@ class GlobusContextCreator implements SecurityContextCreator {
                             logger.debug("Got exception", e);
                         }
                         return null;
+                    } finally {
+                        GlobusSecurityUtils.restoreSecurityProvider(p);
                     }
                 }
             }
@@ -134,9 +146,10 @@ class GlobusContextCreator implements SecurityContextCreator {
             } else {
                 certFile = c.getCertfile().toString();
             }
+            Provider p = GlobusSecurityUtils.setSecurityProvider();
             try {
                 GATGridProxyModel model = new GATGridProxyModel();
-                GlobusCredential globusCred = model.createProxy(passphrase,
+                X509Credential globusCred = model.createProxy(passphrase,
                         certFile, keyFile);
                 GSSCredential result = new GlobusGSSCredentialImpl(globusCred,
                         GSSCredential.INITIATE_AND_ACCEPT);
@@ -150,15 +163,22 @@ class GlobusContextCreator implements SecurityContextCreator {
                     logger.debug("Passphrase: FAILED " + e);
                 }
                 return null;
+            } finally {
+                GlobusSecurityUtils.restoreSecurityProvider(p);
             }
         } else if (inContext instanceof MyProxyServerCredentialSecurityContext) {
             MyProxyServerCredentialSecurityContext c = (MyProxyServerCredentialSecurityContext) inContext;
+            Provider p = GlobusSecurityUtils.setSecurityProvider();
 
-            GSSCredential cred = GlobusSecurityUtils
-                    .getCredentialFromMyProxyServer(gatContext, c.getHost(), c.getPort(), c
-                            .getUsername(), c.getPassword());
+            try {
+                GSSCredential cred = GlobusSecurityUtils
+                        .getCredentialFromMyProxyServer(gatContext, c.getHost(), c.getPort(), c
+                                .getUsername(), c.getPassword());
 
-            return cred;
+                return cred;
+            } finally {
+                GlobusSecurityUtils.restoreSecurityProvider(p);
+            }
         }
         return null; // unknown security context type
     }
@@ -175,6 +195,25 @@ public class GlobusSecurityUtils {
     private static GSSCredential cachedDefaultCredential = null;
     
     private static boolean didDefaultCredential = false;
+
+    public static Provider setSecurityProvider() {
+        // Install correct version of security provider.
+        Provider p = Security.getProvider("BC");
+        if (p instanceof BouncyCastleProvider) {
+            p = null;
+        } else {
+            Security.removeProvider("BC");
+            Security.addProvider(new BouncyCastleProvider());
+        }
+        return p;
+    }
+
+    public static void restoreSecurityProvider(Provider p) {
+        if (p != null) {
+            Security.removeProvider("BC");
+            Security.addProvider(p);
+        }
+    }
 
 
     /**
@@ -195,7 +234,7 @@ public class GlobusSecurityUtils {
         GSSCredential c = (GSSCredential) data;
 
         if (logger.isDebugEnabled()) {
-            logger.debug("getGlobusCredential: got credential: \n" + (c == null ? "NULL" : ((GlobusGSSCredentialImpl)c).getGlobusCredential().toString()));
+            logger.debug("getGlobusCredential: got credential: \n" + (c == null ? "NULL" : ((GlobusGSSCredentialImpl)c).getX509Credential().toString()));
         }
 
         int remaining = 0;
@@ -277,6 +316,7 @@ public class GlobusSecurityUtils {
                 logger.debug("trying to get default credential");
             }
 
+            Provider p = setSecurityProvider();
             try {
                 // Get the user credential
                 ExtendedGSSManager manager = (ExtendedGSSManager) ExtendedGSSManager
@@ -291,6 +331,8 @@ public class GlobusSecurityUtils {
                 }
 
                 // handled below
+            } finally {
+                restoreSecurityProvider(p);
             }
         }
 
@@ -307,11 +349,17 @@ public class GlobusSecurityUtils {
 
     public static GSSCredential getCredential(String file) {
         GSSCredential credential = null;
+        Provider p = setSecurityProvider();
 
         try {
-            GlobusCredential globusCred = new GlobusCredential(file);
+            X509Credential globusCred = new X509Credential(file);
             credential = new GlobusGSSCredentialImpl(globusCred,
                     GSSCredential.INITIATE_AND_ACCEPT);
+            if (logger.isDebugEnabled()) {
+                logger.debug("loaded credential from file " + file);
+            }
+
+            return credential;
         } catch (Throwable t) {
             if (logger.isDebugEnabled()) {
                 logger.debug("loading credential from file " + file
@@ -319,13 +367,10 @@ public class GlobusSecurityUtils {
             }
 
             return null;
+        } finally {
+            restoreSecurityProvider(p);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("loaded credential from file " + file);
-        }
-
-        return credential;
     }
 
     
@@ -370,6 +415,7 @@ public class GlobusSecurityUtils {
             logger.debug("trying to get credential from MyProxyServer");
         }
 
+        Provider p = setSecurityProvider();
         try {
             if (port < 0) {
                 port = MyProxy.DEFAULT_PORT;
@@ -388,14 +434,16 @@ public class GlobusSecurityUtils {
                 }
                 if ((portalCertFile != null) && (portalKeyFile != null)) {
                     try {
-                        GlobusCredential hostCred = new GlobusCredential(portalCertFile, portalKeyFile);
+                        X509Credential hostCred = new X509Credential(portalCertFile, portalKeyFile);
                         hostGSSCred = new GlobusGSSCredentialImpl(hostCred, GSSCredential.INITIATE_AND_ACCEPT);
                         if (logger.isInfoEnabled()) {
                             logger.info("using Server credential: " + hostGSSCred);
                         }
-                    } catch (GlobusCredentialException e) {
+                    } catch (CredentialException e) {
                         throw new CouldNotInitializeCredentialException(e.getMessage(), e);				
                     } catch (GSSException e) {
+                        throw new CouldNotInitializeCredentialException(e.getMessage(), e);				
+                    } catch (java.io.IOException e) {
                         throw new CouldNotInitializeCredentialException(e.getMessage(), e);				
                     }
                 }
@@ -413,6 +461,8 @@ public class GlobusSecurityUtils {
 
             throw new CouldNotInitializeCredentialException(
                     "getCredentialFromMyProxyServer", e);
+        } finally {
+            restoreSecurityProvider(p);
         }
     }
 }

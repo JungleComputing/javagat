@@ -26,8 +26,8 @@ import org.glite.wms.wmproxy.JobIdStructType;
 import org.glite.wsdl.types.lb.GenericFault;
 import org.glite.wsdl.types.lb.JobStatus;
 import org.glite.wsdl.types.lb.StatName;
-import org.globus.gsi.GlobusCredential;
-import org.globus.gsi.GlobusCredentialException;
+import org.globus.gsi.X509Credential;
+import org.globus.gsi.CredentialException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -120,11 +120,11 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 		}
 		GSSCredential userCredential;
 		try {
-			userCredential = new GlobusGSSCredentialImpl(new GlobusCredential(proxyFile), GSSCredential.INITIATE_AND_ACCEPT);
+			userCredential = new GlobusGSSCredentialImpl(new X509Credential(proxyFile), GSSCredential.INITIATE_AND_ACCEPT);
 		} catch (GSSException e) {
             LOGGER.info(e.toString());
             throw new GATInvocationException("Failed to load credentials");
-        } catch (GlobusCredentialException e) {
+        } catch (CredentialException e) {
             LOGGER.info(e.toString());
             throw new GATInvocationException("Failed to load credentials");
         }

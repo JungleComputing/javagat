@@ -6,18 +6,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
+import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.DLSet;
 import org.bouncycastle.asn1.x509.AttributeCertificate;
 import org.bouncycastle.asn1.x509.AttributeCertificateInfo;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -25,7 +27,7 @@ import org.bouncycastle.asn1.x509.IetfAttrSyntax;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.globus.gsi.GSIConstants;
-import org.globus.gsi.GlobusCredential;
+import org.globus.gsi.X509Credential;
 import org.globus.gsi.X509ExtensionSet;
 import org.globus.gsi.bc.BouncyCastleCertProcessingFactory;
 import org.globus.gsi.bc.BouncyCastleUtil;
@@ -127,7 +129,7 @@ public class VomsProxyManager extends GlobusProxyManager {
         BouncyCastleX509Extension bc = new BouncyCastleX509Extension(AC_OID,
                 encodable);
         BouncyCastleX509Extension bc1 = new BouncyCastleX509Extension(KU_OID,
-                keyUsage.getDERObject());
+                keyUsage.toASN1Primitive());
 
         extSet.add(bc);
         extSet.add(bc1);
@@ -138,7 +140,7 @@ public class VomsProxyManager extends GlobusProxyManager {
         try {
             proxyCred = factory.createCredential(proxyCerts, proxyKey
                     .getPrivateKey(), KEY_LENGTH, lifetime,
-                    GSIConstants.GSI_2_PROXY, extSet);
+                    GSIConstants.DelegationType.FULL, extSet);
         } catch (GeneralSecurityException e) {
             throw new GATInvocationException(
                     "Problem creating a globus credential!", e);
@@ -296,7 +298,7 @@ public class VomsProxyManager extends GlobusProxyManager {
         long lifetime = 0L;
 
         try {
-            GlobusCredential globCred = new GlobusCredential(path);
+            X509Credential globCred = new X509Credential(path);
 
             // check whether the proxy is also a VOMS proxy and not only a
             // globus proxy
@@ -322,7 +324,7 @@ public class VomsProxyManager extends GlobusProxyManager {
      */
     public static String getExistingVOMSProxyHeader(String path) {
         try {
-            GlobusCredential globCred = new GlobusCredential(path);
+            X509Credential globCred = new X509Credential(path);
             return getExistingVOMSProxyHeader(globCred);
         } catch (Exception e) {
             return null;
@@ -337,7 +339,7 @@ public class VomsProxyManager extends GlobusProxyManager {
      * @return The certificate header. If no proxy exists, or if a simple grid
      *         proxy is available, return <code>null</code>
      */
-    public static String getExistingVOMSProxyHeader(GlobusCredential globCred) {
+    public static String getExistingVOMSProxyHeader(X509Credential globCred) {
         try {
             // check whether the proxy is a VOMS proxy and not only a globus
             // proxy
@@ -363,7 +365,7 @@ public class VomsProxyManager extends GlobusProxyManager {
      */
     public static List<String> getExistingVOMSExtensions(String path) {
         try {
-            GlobusCredential credential = new GlobusCredential(path);
+            X509Credential credential = new X509Credential(path);
             return getExistingVOMSExtensions(credential);
         } catch (Exception e) {
             return null;
@@ -380,7 +382,7 @@ public class VomsProxyManager extends GlobusProxyManager {
      *         proxy is not voms enabled
      */
     public static List<String> getExistingVOMSExtensions(
-            GlobusCredential credential) {
+            X509Credential credential) {
         try {
             List<String> voNames = new ArrayList<String>();
             List<String> fqans = new ArrayList<String>();
@@ -397,14 +399,14 @@ public class VomsProxyManager extends GlobusProxyManager {
 
                 byte[] octets = extension.getValue().getOctets();
                 ASN1InputStream iStream = new ASN1InputStream(octets);
-                DERObject derObject = iStream.readObject();
+                ASN1Primitive derObject = iStream.readObject();
                 ASN1Sequence seq = ASN1Sequence.getInstance(derObject);
                 seq = (ASN1Sequence) seq.getObjectAt(0);
 
                 for (int i = 0; i < seq.size(); i++) {
                     ASN1Sequence acSeq = (ASN1Sequence) seq.getObjectAt(i);
                     try {
-                        ASN1Sequence attributes = new AttributeCertificateInfo(
+                        ASN1Sequence attributes = AttributeCertificateInfo.getInstance(
                                 (ASN1Sequence) acSeq.getObjectAt(0))
                                 .getAttributes();
 
@@ -417,15 +419,15 @@ public class VomsProxyManager extends GlobusProxyManager {
 
                             if (VOMS_ATTR_OID.equals(id.getId())) {
 
-                                DERSet set = (DERSet) attribute.getObjectAt(1);
+                                DLSet set = (DLSet) attribute.getObjectAt(1);
 
                                 for (int k = 0; k < set.size(); k++) {
 
-                                    IetfAttrSyntax attr = new IetfAttrSyntax(
+                                    IetfAttrSyntax attr = IetfAttrSyntax.getInstance(
                                             (ASN1Sequence) set.getObjectAt(k));
                                     ASN1Sequence paSeq = (ASN1Sequence) attr
                                             .getPolicyAuthority()
-                                            .getDERObject();
+                                            .toASN1Primitive();
                                     GeneralName paGName = GeneralName
                                             .getInstance(paSeq.getObjectAt(0));
                                     String paString = ((DERIA5String) paGName
@@ -479,7 +481,11 @@ public class VomsProxyManager extends GlobusProxyManager {
     public void saveProxyToFile(String path) throws IOException, GSSException {
         final File file = new File(path);
         final FileOutputStream outstream = new FileOutputStream(file);
-        proxyCred.save(outstream);
+        try {
+            proxyCred.save(outstream);
+        } catch (CertificateEncodingException ex) {
+            LOGGER.info("problem savign procyCred (encoding): " , ex);
+        }
         try {
             Runtime.getRuntime().exec("chmod 600 " + path);
         } catch (IOException io) {

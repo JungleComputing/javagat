@@ -4,24 +4,19 @@ import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
-import org.globus.gsi.CertUtil;
+import org.globus.gsi.util.CertificateLoadUtil;
 import org.globus.gsi.GSIConstants;
-import org.globus.gsi.GlobusCredential;
+import org.globus.gsi.X509Credential;
 import org.globus.gsi.OpenSSLKey;
 import org.globus.gsi.X509ExtensionSet;
 import org.globus.gsi.bc.BouncyCastleCertProcessingFactory;
 import org.globus.gsi.bc.BouncyCastleOpenSSLKey;
-import org.globus.tools.proxy.GridProxyModel;
 
-public class GATGridProxyModel extends GridProxyModel {
+public class GATGridProxyModel {
 
-    public GlobusCredential createProxy(String pwd) {
-        return null;
-    }
-
-    public GlobusCredential createProxy(String passphrase, String certFile,
+    public X509Credential createProxy(String passphrase, String certFile,
             String keyFile) throws Exception {
-        userCert = CertUtil.loadCertificate(certFile);
+        X509Certificate userCert = CertificateLoadUtil.loadCertificate(certFile);
         OpenSSLKey key = new BouncyCastleOpenSSLKey(keyFile);
 
         if (key.isEncrypted()) {
@@ -35,11 +30,8 @@ public class GATGridProxyModel extends GridProxyModel {
         PrivateKey userKey = key.getPrivateKey();
         BouncyCastleCertProcessingFactory factory = BouncyCastleCertProcessingFactory
                 .getDefault();
-        int proxyType = (getLimited()) ? GSIConstants.DELEGATION_LIMITED
-                : GSIConstants.DELEGATION_FULL;
 
         return factory.createCredential(new X509Certificate[] { userCert },
-                userKey, 512, 12 * 3600, proxyType, (X509ExtensionSet) null);
+                userKey, 512, 12 * 3600, GSIConstants.DelegationType.FULL, (X509ExtensionSet) null);
     }
-
 }

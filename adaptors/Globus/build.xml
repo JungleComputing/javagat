@@ -8,7 +8,7 @@
     <property name="tmp" location="tmp" />
     <property name="lib" location="${gat.location}/lib/adaptors/GlobusAdaptor" />
     <property name="external" location="external" />
-    <property name="shared" location="../shared" />
+    <property name="shared" location="../shared/globus" />
     <property name="java.debug.value" value="true" />
 
     <property name="build.sysclasspath" value="ignore"/>
@@ -42,14 +42,13 @@
 	</copy>
 
 	<jar jarfile="${lib}/GlobusAdaptor.jar" basedir="${tmp}" includes="**">
-	    <zipgroupfileset dir="${external}" includes="*.jar"
-		excludes="xml4j.jar,wsrf_provider_jce.jar,xml4j.jar,cog-provider*.jar"/>
+	    <zipgroupfileset dir="${external}" includes="*.jar" excludes="activation.jar, cog-provider*"/>
 	    <manifest>
-		<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor,org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor" />
+		<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor" />
 		<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileInputStreamAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor,org.gridlab.gat.io.cpi.globus.HTTPFileInputStreamAdaptor,org.gridlab.gat.io.cpi.globus.HTTPSFileInputStreamAdaptor" />
 		<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileOutputStreamAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileOutputStreamAdaptor,org.gridlab.gat.io.cpi.globus.HTTPFileOutputStreamAdaptor,org.gridlab.gat.io.cpi.globus.HTTPSFileOutputStreamAdaptor" />
 		<attribute name="RandomAccessFileCpi-class" value="org.gridlab.gat.io.cpi.globus.GridFTPRandomAccessFileAdaptor" />
-		<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor" />
+		<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor" />
 	    </manifest>
 	</jar>
 
@@ -58,15 +57,14 @@
 	<!-- Copy the globus files for globus 4 -->
 	<copy todir="${lib}">
 	    <fileset dir="${external}">
-		<include name="xml4j.jar" />
-		<include name="wsrf_provider_jce.jar" />
-		<include name="xml4j.jar" />
-		<include name="cog-provider*.jar" />
 		<include name="share/**" />
 		<include name="etc/**" />
 		<include name="client-config.wsdd" />
+		<include name="activation.jar" />
+		<include name="cog-provider*" />
 	    </fileset>
 	</copy>
+	<copy todir="${lib}" file="globus"/>
 
     </target>
 

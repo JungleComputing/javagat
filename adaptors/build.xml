@@ -7,6 +7,7 @@
 	<ant dir="shared" />
 	<ant dir="CommandlineSsh" />
 	<ant dir="Globus" />
+	<ant dir="GlobusWS" />
 	<ant dir="GT42" />
 	<ant dir="Gridsam" />
 	<ant dir="Local" />
@@ -52,6 +53,7 @@
 	    <target name="clean" description="clean all adaptors">
 		<ant dir="CommandlineSsh" target="clean" />
 		<ant dir="Globus" target="clean" />
+		<ant dir="GlobusWS" target="clean" />
 		<ant dir="GT42" target="clean" />
 		<ant dir="Gridsam" target="clean" />
 		<ant dir="Local" target="clean" />
@@ -77,6 +79,10 @@
 
 	    <target name="globus" description="build Globus adaptors">
 		<ant dir="Globus" />
+	    </target>
+
+	    <target name="globusws" description="build GlobusWS adaptors">
+		<ant dir="GlobusWS" />
 	    </target>
 
 	    <target name="gt42" description="build GT42 adaptors">

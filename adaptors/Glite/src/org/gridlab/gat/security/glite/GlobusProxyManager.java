@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.globus.common.CoGProperties;
 import org.globus.gsi.CertUtil;
 import org.globus.gsi.GSIConstants;
-import org.globus.gsi.GlobusCredential;
+import org.globus.gsi.X509Credential;
 import org.globus.gsi.OpenSSLKey;
 import org.globus.gsi.bc.BouncyCastleCertProcessingFactory;
 import org.globus.gsi.bc.BouncyCastleOpenSSLKey;
@@ -28,7 +28,7 @@ public class GlobusProxyManager {
 	
 	protected GlobusGSSCredentialImpl gsci = null;	/** The GSS-implemented globus credential */
 	protected int lifetime = -1;					/** The lifetime of the the proxy */
-	protected GlobusCredential proxyCred = null;		/** The globus credentials that will be obtained */
+	protected X509Credential proxyCred = null;		/** The globus credentials that will be obtained */
 	protected OpenSSLKey proxyKey = null;				/** Internal representation of the private key of the user */
 	protected X509Certificate[] proxyCerts = null;		/** Internal representation of the certificate(s) of the CA of the user */
 	private CredentialInfo credInfo = null;			/** This is where the credential information will be encapsulated */
@@ -84,7 +84,7 @@ public class GlobusProxyManager {
 					 proxyKey.getPrivateKey(), 
 					 KEY_LENGTH, 
 					 lifetime, 
-					 GSIConstants.GSI_2_PROXY);
+					 GSIConstants.DelegationType.FULL);
 			
 			gsci = new GlobusGSSCredentialImpl(proxyCred, 
 					   GlobusGSSCredentialImpl.INITIATE_AND_ACCEPT);
