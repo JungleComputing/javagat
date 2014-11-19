@@ -1,14 +1,12 @@
-<project name="Shared Libraries" default="buildall" basedir=".">
+<project name="Shared Libraries" default="build" basedir=".">
     <description>Copy shared libraries for JavaGAT Adaptors.</description>
 
-    <property name="gat.location" location="../../" />
+    <property name="gat.location" location="../../.." />
     <property name="engine_path" location="${gat.location}/lib" />
 
-    <property name="lib" location="${gat.location}/lib/adaptors/shared" />
+    <property name="lib" location="${gat.location}/lib/adaptors/shared/globus" />
 
     <property name="build.sysclasspath" value="ignore"/>
-
-    <target name="buildall" depends="build,subs"/>
 
     <target name="build" depends="clean" description="build the JARs and documentation">
 	<mkdir dir="${lib}" />
@@ -16,20 +14,16 @@
 	<!-- Copy libraries to lib directory -->
 	<copy todir="${lib}">
 	    <fileset dir=".">
-		<include name="bcprov-jdk15-145.jar" />
+		<include name="bcprov-jdk15on-1.50.jar" />
 		<include name="mail.jar" />
 	    </fileset>
 	</copy>
 
-	<jar destfile="${lib}/shared.jar">
+	<jar destfile="${lib}/globus-shared.jar">
 	    <zipgroupfileset dir="." includes="*.jar"
-		excludes="bcprov-jdk15-145.jar, mail.jar" /> 
+		excludes="bcprov-jdk15on-1.50.jar,mail.jar" /> 
 	</jar>
 
-    </target>
-
-    <target name="subs">
-	<ant dir="globus" inheritAll="false"/>
     </target>
 
     <target name="clean" description="clean up">
